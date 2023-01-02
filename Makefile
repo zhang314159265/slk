@@ -41,10 +41,17 @@ endif
 # don't see this used in dynamic linking case
 LIBGCC_EH := /usr/lib/gcc/x86_64-linux-gnu/11/32/libgcc_eh.a
 
+# all:
+
+runld_myown_libc:
+	rm -f ./a.out
+	ld -melf_i386 -static $(CRT1) $(CRTi) artifact/sum.gas.o $(CRTn)
+	./a.out
+
 runld:
 	rm -f ./a.out
 ifeq ($(USE_STATIC), 1)
-	ld -melf_i386 -static $(CRT1) $(CRTi) $(CRTbegin) artifact/sum.gas.o --start-group $(LIBC) $(LIBGCC) $(LIBGCC_EH) --end-group $(CRTend) $(CRTn)
+	ld -melf_i386 -static $(CRT1) $(CRTi) artifact/sum.gas.o --start-group $(LIBC) $(LIBGCC) $(LIBGCC_EH) --end-group $(CRTn)
 else
 	ld -melf_i386 -I /lib/ld-linux.so.2 $(CRT1) artifact/sum.gas.o $(LIBC) # ld use shared library by default
 endif

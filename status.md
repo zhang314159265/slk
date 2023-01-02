@@ -13,15 +13,25 @@ A linker implemented in C.
 - [ld document](https://sourceware.org/binutils/docs-2.39/ld.html)
 - [crt0 - wikipedia][https://en.wikipedia.org/wiki/Crt0]
 - [Createing a C Library - osdev](https://wiki.osdev.org/Creating_a_C_Library): referred from crt0 wikipedia page. Talks about crt0, crti, crtn, crtbegin, crtend.
+- [ar doc](https://sourceware.org/binutils/docs-2.39/binutils.htm): the doc is very simply and basically only goes thru the command line options.
+- [ar - wikipedia](https://en.wikipedia.org/wiki/Ar_(Unix)): explains the format of an ar file.
 
 # Low Prio
 - check how ar file works: understand the format and how linker handles it
+- why nm shows no symbols for libc.so but `readelf -s` works
 
 # Scratch
+- TODO: understand AR file format to crack libc.a
+
+- TODO: create my own simple libc (to provide printf and `__libc_start_main`)
+
+- TODO: after creating my own simple libc, create my own crt object files.
+
+- TODO: fully understand `make runld` with `USE_STATIC=1`
+
 - TODO:
   - create a example using ctor/dtor to try out crti/crtn/crtbegin/crtend
 
-- TODO: fully understand the example for sum
 - TODO: use my own crt files and libc at the beginning for sum
 
 - TODO: create a example .s/.o that uses libgcc
