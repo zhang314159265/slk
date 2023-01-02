@@ -4,16 +4,17 @@ CRTbegin := /usr/lib/gcc/x86_64-linux-gnu/11/32/crtbeginS.o
 CRTend := /usr/lib/gcc/x86_64-linux-gnu/11/32/crtendS.o
 CRTn := /usr/lib/gcc/x86_64-linux-gnu/11/../../../i386-linux-gnu/crtn.o
 
-LIB_SEARCH_PATH := -L/usr/lib/gcc/x86_64-linux-gnu/11/32 -L/usr/lib/gcc/x86_64-linux-gnu/11/../../../i386-linux-gnu -L/usr/lib/gcc/x86_64-linux-gnu/11/../../../../lib32 -L/lib/i386-linux-gnu -L/lib/../lib32 -L/usr/lib/i386-linux-gnu -L/usr/lib/../lib32 -L/usr/lib/gcc/x86_64-linux-gnu/11 -L/usr/lib/gcc/x86_64-linux-gnu/11/../../../i386-linux-gnu -L/usr/lib/gcc/x86_64-linux-gnu/11/../../.. -L/lib/i386-linux-gnu -L/usr/lib/i386-linux-gnu
-
 LIBGCC := /usr/lib/gcc/x86_64-linux-gnu/11/32/libgcc.a
-LIGGCC_S := /usr/lib/gcc/x86_64-linux-gnu/11/32/libgcc_s.so
-LIBC := /usr/lib/gcc/x86_64-linux-gnu/11/../../../i386-linux-gnu/libc.so
+# this is a linker script. We can expand the content of the linker script to the command line explicitly
+# LIBC := /usr/lib/gcc/x86_64-linux-gnu/11/../../../i386-linux-gnu/libc.so
+LIBC := /lib/i386-linux-gnu/libc.so.6 /usr/lib/i386-linux-gnu/libc_nonshared.a
 
 runld:
 	rm -f ./a.out
-	ld -melf_i386 -I /lib/ld-linux.so.2 $(CRT1) $(CRTi) $(CRTbegin) artifact/sum.gas.o $(LIBGCC) $(LIBGCC_S) $(LIBC) $(CRTend) $(CRTn)
+	ld -melf_i386 -I /lib/ld-linux.so.2 $(CRT1) $(CRTi) $(CRTbegin) artifact/sum.gas.o $(LIBGCC) $(LIBC) $(CRTend) $(CRTn)
 	./a.out
+
+LIB_SEARCH_PATH := -L/usr/lib/gcc/x86_64-linux-gnu/11/32 -L/usr/lib/gcc/x86_64-linux-gnu/11/../../../i386-linux-gnu -L/usr/lib/gcc/x86_64-linux-gnu/11/../../../../lib32 -L/lib/i386-linux-gnu -L/lib/../lib32 -L/usr/lib/i386-linux-gnu -L/usr/lib/../lib32 -L/usr/lib/gcc/x86_64-linux-gnu/11 -L/usr/lib/gcc/x86_64-linux-gnu/11/../../../i386-linux-gnu -L/usr/lib/gcc/x86_64-linux-gnu/11/../../.. -L/lib/i386-linux-gnu -L/usr/lib/i386-linux-gnu
 
 # the command simplified from collect2 command line called by the gcc driver
 raw:
