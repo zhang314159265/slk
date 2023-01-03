@@ -21,8 +21,6 @@ A linker implemented in C.
 - why nm shows no symbols for libc.so but `readelf -s` works
 
 # Scratch
-- TODO: understand AR file format to crack libc.a
-
 - TODO: create my own simple libc (to provide printf and `__libc_start_main`)
 
 - TODO: after creating my own simple libc, create my own crt object files.
