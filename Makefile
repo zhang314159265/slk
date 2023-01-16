@@ -43,10 +43,24 @@ LIBGCC_EH := /usr/lib/gcc/x86_64-linux-gnu/11/32/libgcc_eh.a
 
 # all:
 
-runld_myown_libc:
-	rm -f ./a.out
-	ld -melf_i386 -static $(CRT1) $(CRTi) artifact/sum.gas.o $(CRTn)
-	./a.out
+FULL_LIBC_O := $(wildcard artifact/libc.o/*)
+
+# skip artifact/libc.o/dl-reloc-static-pie.o since it defines _dl_relocate_static_pie which is already defined by CRT1
+FULL_LIBC_O := $(filter-out artifact/libc.o/dl-reloc-static-pie.o,$(FULL_LIBC_O))
+# avoid redefine __memcpy_chk which is already defined by memcpy-ia32.o
+FULL_LIBC_O := $(filter-out artifact/libc.o/memcpy_chk-nonshared.o,$(FULL_LIBC_O))
+# avoid redefine __memmove_chk which is already defined by memmove-ia32.o
+FULL_LIBC_O := $(filter-out artifact/libc.o/memmove_chk-nonshared.o,$(FULL_LIBC_O))
+# avoid redefine __mempcpy_chk which is already defined by mempcpy-ia32.o
+FULL_LIBC_O := $(filter-out artifact/libc.o/mempcpy_chk-nonshared.o,$(FULL_LIBC_O))
+
+FULL_LIBGCC_O := $(wildcard artifact/libgcc.o/*)
+FULL_LIBGCC_EH_O := $(wildcard artifact/libgcc_eh.o/*)
+
+runld_full_flatten:
+	@rm -f ./a.out
+	@ld -melf_i386 -static $(CRT1) $(CRTi) artifact/sum.gas.o $(FULL_LIBC_O) $(FULL_LIBGCC_O) $(FULL_LIBGCC_EH_O) $(CRTn)
+	@./a.out
 
 runld:
 	rm -f ./a.out

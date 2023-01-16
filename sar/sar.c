@@ -306,15 +306,44 @@ void ctx_free(struct arctx* ctx) {
   vec_free(&ctx->sglist);
 }
 
+void extract_member(struct arctx* ctx, const char* mem_name) {
+  assert(mem_name);
+  printf("Trying to extracting %s out of the ar file\n", mem_name);
+  // TODO: use hash table
+  struct elf_member* found_elf = NULL;
+  VEC_FOREACH(&ctx->elf_mem_list, struct elf_member, elf) {
+    if (strcmp(mem_name, elf->name) == 0) {
+      found_elf = elf;
+      break;
+    }
+  }
+  assert(found_elf);
+  char path[1024]; // assume enough
+  sprintf(path, "../artifact/%s", mem_name); // hardcode path for now
+  FILE* fp = fopen(path, "w");
+  assert(fp);
+  int status = fwrite(ctx->buf + found_elf->off, 1, elf->size, fp);
+  assert(status == elf->size);
+  fclose(fp);
+  printf("Successfully extract %s\n", mem_name);
+}
+
 int main(int argc, char **argv) {
-  if (argc != 2) {
-    printf("Usage: sar <path>\n");
+  if (argc < 2) {
+    printf("Usage: sar <path> [<member file>]\n");
     exit(1);
   }
   const char* ar_path = argv[1];
+  const char* mem_name = argv[2];
   struct arctx ctx = ctx_create(ar_path);
   parse_ar_file(&ctx);
-  ctx_dump(&ctx);
+  if (!mem_name) {
+    // without a member name, we just dump the ar metadata
+    ctx_dump(&ctx);
+  } else {
+    // with a member name, we extract it to artifact/ directory
+    extract_member(&ctx, mem_name);
+  }
   ctx_free(&ctx);
   printf("bye\n");
   return 0;

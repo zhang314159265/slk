@@ -20,7 +20,19 @@ A linker implemented in C.
 - check how ar file works: understand the format and how linker handles it
 - why nm shows no symbols for libc.so but `readelf -s` works
 
+# Quest
+- be able to use sar to parse libc, libgcc and `libgcc_eh`
+  - currently it fails to parse libgcc
+
 # Scratch
+- TODO: build sum with needed member in ar files explicitly passed in to ld
+  <++++++++++++++++++TODO HERE
+
+- TODO: do 3 ways of flatten static lib in linking
+  - fully flatten
+  - automatic flatten
+  - manual flatten (may skip if automatic flatten shows there are too many items after flattening)
+
 - TODO: create my own simple libc (to provide printf and `__libc_start_main`)
 
 - TODO: after creating my own simple libc, create my own crt object files.
