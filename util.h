@@ -58,6 +58,8 @@ char* lenstrdup(const char* src, int len) {
   return dst;
 }
 
+#include "check.h"
+
 int lenstrtoi(const char* s, int len) {
   const char* scpy = lenstrdup(s, len);
   char* end = NULL;

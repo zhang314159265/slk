@@ -25,12 +25,11 @@ A linker implemented in C.
   - currently it fails to parse libgcc
 
 # Scratch
-- TODO: build sum with needed member in ar files explicitly passed in to ld
-  <++++++++++++++++++TODO HERE
+- integrate snm into sar to verify if the symbols in the symbol file are exactly those defined global symbols in .symtab section.
 
 - TODO: do 3 ways of flatten static lib in linking
-  - fully flatten
-  - automatic flatten
+  - fully flatten [DONE]
+  - automatic flatten <== TODO HERE, find what's the min list of .o files.
   - manual flatten (may skip if automatic flatten shows there are too many items after flattening)
 
 - TODO: create my own simple libc (to provide printf and `__libc_start_main`)
