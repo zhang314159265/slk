@@ -1,3 +1,5 @@
+/* TODO: if this get complext, split arctx from main program */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -9,6 +11,7 @@
 #include "util.h"
 #include "vec.h"
 #include "elf_member.h"
+#include "elf_reader.h"
 
 #define SIGNATURE "!<arch>\n"
 #define SIGNATURE_LEN 8
@@ -306,9 +309,9 @@ void ctx_free(struct arctx* ctx) {
   vec_free(&ctx->sglist);
 }
 
-void extract_member(struct arctx* ctx, const char* mem_name) {
+// return nULL if not found
+struct elf_member* arctx_get_elfmem_by_name(struct arctx* ctx, const char* mem_name) {
   assert(mem_name);
-  printf("Trying to extracting %s out of the ar file\n", mem_name);
   // TODO: use hash table
   struct elf_member* found_elf = NULL;
   VEC_FOREACH(&ctx->elf_mem_list, struct elf_member, elf) {
@@ -317,32 +320,81 @@ void extract_member(struct arctx* ctx, const char* mem_name) {
       break;
     }
   }
+  return found_elf;
+}
+
+void extract_member(struct arctx* ctx, const char* mem_name) {
+  printf("Trying to extracting %s out of the ar file\n", mem_name);
+  assert(mem_name);
+  struct elf_member* found_elf = arctx_get_elfmem_by_name(ctx, mem_name);
   assert(found_elf);
   char path[1024]; // assume enough
   sprintf(path, "../artifact/%s", mem_name); // hardcode path for now
   FILE* fp = fopen(path, "w");
   assert(fp);
-  int status = fwrite(ctx->buf + found_elf->off, 1, elf->size, fp);
-  assert(status == elf->size);
+  int status = fwrite(ctx->buf + found_elf->off, 1, found_elf->size, fp);
+  assert(status == found_elf->size);
   fclose(fp);
   printf("Successfully extract %s\n", mem_name);
 }
 
+// verify the symbols in the symbol lookup table and in elf SYMTAB section match.
+void verify_member(struct arctx* ctx, const char* mem_name) {
+  printf("Verify member %s\n", mem_name);
+  struct elf_member* elfmem = arctx_get_elfmem_by_name(ctx, mem_name);
+  elfmem_dump(elfmem, &ctx->sglist);
+  struct vec names_in_index = ((struct sym_group*) vec_get_item(&ctx->sglist, elfmem->sgidx))->names;
+
+  char* elfbuf = ctx->buf + elfmem->off;
+  int elfsiz = elfmem->size;
+  struct elf_reader reader = elf_reader_create_from_buffer(elfbuf, elfsiz);
+  // elf_reader_list_syms(&reader);
+
+  // TODO: verify that the symbols in the sym_group matches the
+  // defined global symbols in the elf file.
+  struct vec global_defined_names = elf_reader_get_global_defined_syms(&reader);
+  printf("global defined names in elf:\n");
+  VEC_FOREACH(&global_defined_names, char *, name_in_elf_ptr) {
+    printf(" - %s\n", *name_in_elf_ptr);
+  }
+  assert(names_in_index.len == global_defined_names.len);
+  for (int i = 0; i < names_in_index.len; ++i) {
+    char* lhs_name = *(char**) vec_get_item(&names_in_index, i);
+    char* rhs_name = *(char**) vec_get_item(&global_defined_names, i);
+    assert(strcmp(lhs_name, rhs_name) == 0);
+  }
+  vec_free(&global_defined_names);
+  printf("Pass verification for %s\n", mem_name);
+}
+
 int main(int argc, char **argv) {
   if (argc < 2) {
-    printf("Usage: sar <path> [<member file>]\n");
+    printf("Usage: sar <path> [-v] [<member file>]\n");
     exit(1);
   }
-  const char* ar_path = argv[1];
-  const char* mem_name = argv[2];
+  int argidx = 1;
+  const char* ar_path = argv[argidx++];
+  int bverify = 0;
+  if (argidx < argc && strcmp(argv[argidx], "-v") == 0) {
+    bverify = 1;
+    ++argidx;
+  }
+  const char* mem_name = NULL;
+  if (argidx < argc) {
+    mem_name = argv[argidx++];
+  }
   struct arctx ctx = ctx_create(ar_path);
   parse_ar_file(&ctx);
   if (!mem_name) {
     // without a member name, we just dump the ar metadata
     ctx_dump(&ctx);
   } else {
-    // with a member name, we extract it to artifact/ directory
-    extract_member(&ctx, mem_name);
+    if (bverify) {
+      verify_member(&ctx, mem_name);
+    } else {
+      // with a member name, we extract it to artifact/ directory
+      extract_member(&ctx, mem_name);
+    }
   }
   ctx_free(&ctx);
   printf("bye\n");

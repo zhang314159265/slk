@@ -41,9 +41,9 @@ A linker implemented in C.
 - TODO:
   - create a example using ctor/dtor to try out crti/crtn/crtbegin/crtend
 
-- TODO: use my own crt files and libc at the beginning for sum
-
 - TODO: create a example .s/.o that uses libgcc
+
+- check dynamic linking
 
 - check how linker works when calling 'gcc' to build the sum executable.
   - how does ld create the executable based on sum.o and libraries

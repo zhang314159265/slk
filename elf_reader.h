@@ -2,6 +2,7 @@
 
 #include "util.h"
 #include "elf.h"
+#include "vec.h"
 #include <sys/stat.h>
 
 struct elf_reader {
@@ -67,21 +68,10 @@ void* elf_reader_load_section(struct elf_reader* reader, Elf32_Shdr* sh) {
   return elf_reader_load_segment(reader, sh->sh_offset, sh->sh_size);
 }
 
-struct elf_reader elf_reader_create(const char* path) {
-  printf("Create elf reader for %s\n", path);
+struct elf_reader elf_reader_create_from_buffer(const char* buf, int size) {
   struct elf_reader reader = {0};
-
-  struct stat elf_st;
-  int status = stat(path, &elf_st);
-  assert(status == 0);
-  reader.file_size = elf_st.st_size;
-  reader.buf = malloc(reader.file_size);
-  FILE* fp = fopen(path, "rb");
-  assert(fp);
-  status = fread(reader.buf, 1, reader.file_size, fp);
-  assert(status == reader.file_size);
-  fclose(fp);
-
+  reader.file_size = size;
+  reader.buf = (char *) buf;
   // verify elf header
   assert(reader.file_size >= sizeof(Elf32_Ehdr));
   reader.ehdr = (void*) reader.buf;
@@ -109,6 +99,23 @@ struct elf_reader elf_reader_create(const char* path) {
     }
   }
   return reader;
+}
+
+struct elf_reader elf_reader_create(const char* path) {
+  printf("Create elf reader for %s\n", path);
+
+  struct stat elf_st;
+  int status = stat(path, &elf_st);
+  assert(status == 0);
+  int file_size = elf_st.st_size;
+  char *buf = malloc(file_size);
+  FILE* fp = fopen(path, "rb");
+  assert(fp);
+  status = fread(buf, 1, file_size, fp);
+  assert(status == file_size);
+  fclose(fp);
+
+  return elf_reader_create_from_buffer(buf, file_size);
 }
 
 const char* _sht_to_str(int sht) {
@@ -191,7 +198,26 @@ void elf_reader_list_sht(struct elf_reader* reader) {
   }
 }
 
-// TODO: list symbol names
+int elf_reader_is_defined_section(struct elf_reader* reader, int secno) {
+  return secno > 0 && secno < reader->nsection;
+}
+
+/* return a vec of names and caller should free it */
+struct vec elf_reader_get_global_defined_syms(struct elf_reader* reader) {
+  struct vec names = vec_create(sizeof(char*));
+  for (int i = 0; i < reader->nsym; ++i) {
+    Elf32_Sym* sym = reader->symtab + i;
+    // int type = ELF32_ST_TYPE(sym->st_info);
+    int bind = ELF32_ST_BIND(sym->st_info);
+    char* name = reader->symstr + sym->st_name;
+    if (bind == STB_GLOBAL && elf_reader_is_defined_section(reader, sym->st_shndx)) {
+      vec_append(&names, &name);
+    }
+  }
+
+  return names;
+}
+
 void elf_reader_list_syms(struct elf_reader* reader) {
   printf("The file contains %d symbols\n", reader->nsym);
   for (int i = 0; i < reader->nsym; ++i) {
