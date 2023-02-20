@@ -51,6 +51,10 @@ typedef uint16_t Elf32_Section;
 #define STT_FUNC 2 /* symbol is a code object */
 #define STT_SECTION 3 /* symbol associated with a section */
 #define STT_FILE 4 /* symbol's name is file name */
+#define STT_TLS 6 /* thread local data object */
+#define STT_LOOS 10 /* start of os-specific */
+#define STT_GNU_IFUNC 10 /* symbol is indirect code object */
+#define STT_HIOS 12 /* end of os-specific */
 
 #define R_386_32 1 /* direct 32 bit */
 #define R_386_PC32 2 /* PC relative 32 bit */

@@ -28,6 +28,8 @@ struct arctx {
   struct vec sglist; // a list of symbol groups
 };
 
+void verify_member(struct arctx* ctx, struct elf_member* elfmem);
+
 struct file_header {
   char file_identifier[16];
   char mod_ts[12]; // file modification timestamp
@@ -338,17 +340,27 @@ void extract_member(struct arctx* ctx, const char* mem_name) {
   printf("Successfully extract %s\n", mem_name);
 }
 
-// verify the symbols in the symbol lookup table and in elf SYMTAB section match.
-void verify_member(struct arctx* ctx, const char* mem_name) {
+void verify_member_by_name(struct arctx* ctx, const char* mem_name) {
   printf("Verify member %s\n", mem_name);
   struct elf_member* elfmem = arctx_get_elfmem_by_name(ctx, mem_name);
+  verify_member(ctx, elfmem);
+}
+
+// verify the symbols in the symbol lookup table and in elf SYMTAB section match.
+void verify_member(struct arctx* ctx, struct elf_member* elfmem) {
   elfmem_dump(elfmem, &ctx->sglist);
-  struct vec names_in_index = ((struct sym_group*) vec_get_item(&ctx->sglist, elfmem->sgidx))->names;
+  struct vec names_in_index;
+  if (elfmem->sgidx >= 0) {
+    names_in_index = ((struct sym_group*) vec_get_item(&ctx->sglist, elfmem->sgidx))->names;
+  } else {
+    printf("\033[33mNo symbol found in the index file for %s\033[0m\n", elfmem->name);
+    names_in_index = vec_create_nomalloc(sizeof(char*));
+  }
 
   char* elfbuf = ctx->buf + elfmem->off;
   int elfsiz = elfmem->size;
   struct elf_reader reader = elf_reader_create_from_buffer(elfbuf, elfsiz);
-  // elf_reader_list_syms(&reader);
+  elf_reader_list_syms(&reader);
 
   // TODO: verify that the symbols in the sym_group matches the
   // defined global symbols in the elf file.
@@ -364,7 +376,17 @@ void verify_member(struct arctx* ctx, const char* mem_name) {
     assert(strcmp(lhs_name, rhs_name) == 0);
   }
   vec_free(&global_defined_names);
-  printf("Pass verification for %s\n", mem_name);
+  printf("Pass verification for %s\n", elfmem->name);
+}
+
+void verify_all_members(struct arctx* ctx) {
+  int idx = 0;
+  int tot = ctx->elf_mem_list.len;
+  VEC_FOREACH(&ctx->elf_mem_list, struct elf_member, elfmem) {
+    printf("Verifying %d/%d member...\n", idx++, tot);
+    verify_member(ctx, elfmem);
+  }
+  printf("Pass verifying all members in the .a file");
 }
 
 int main(int argc, char **argv) {
@@ -386,11 +408,15 @@ int main(int argc, char **argv) {
   struct arctx ctx = ctx_create(ar_path);
   parse_ar_file(&ctx);
   if (!mem_name) {
-    // without a member name, we just dump the ar metadata
-    ctx_dump(&ctx);
+    if (bverify) {
+      verify_all_members(&ctx);
+    } else {
+      // without a member name, we just dump the ar metadata
+      ctx_dump(&ctx);
+    }
   } else {
     if (bverify) {
-      verify_member(&ctx, mem_name);
+      verify_member_by_name(&ctx, mem_name);
     } else {
       // with a member name, we extract it to artifact/ directory
       extract_member(&ctx, mem_name);

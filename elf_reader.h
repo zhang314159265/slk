@@ -141,14 +141,18 @@ const char *_symtype_to_str(int type) {
   switch (type) {
   case STT_NOTYPE:
     return "STT_NOTYPE";
-  case STT_FILE:
-    return "STT_FILE";
-  case STT_SECTION:
-    return "STT_SECTION";
   case STT_OBJECT:
     return "STT_OBJECT";
   case STT_FUNC:
     return "STT_FUNC";
+  case STT_SECTION:
+    return "STT_SECTION";
+  case STT_FILE:
+    return "STT_FILE";
+  case STT_TLS:
+    return "STT_TLS";
+  case STT_GNU_IFUNC:
+    return "STT_GNU_IFUNC";
   default:
     FAIL("Unrecognized symbol type %d", type);
   }
@@ -199,10 +203,12 @@ void elf_reader_list_sht(struct elf_reader* reader) {
 }
 
 int elf_reader_is_defined_section(struct elf_reader* reader, int secno) {
-  return secno > 0 && secno < reader->nsection;
+  return (secno > 0 && secno < reader->nsection) || secno == SHN_ABS;
 }
 
-/* return a vec of names and caller should free it */
+/* return a vec of names and caller should free it.
+ * Only defined global/weak symbols are returned.
+ */
 struct vec elf_reader_get_global_defined_syms(struct elf_reader* reader) {
   struct vec names = vec_create(sizeof(char*));
   for (int i = 0; i < reader->nsym; ++i) {
@@ -210,7 +216,7 @@ struct vec elf_reader_get_global_defined_syms(struct elf_reader* reader) {
     // int type = ELF32_ST_TYPE(sym->st_info);
     int bind = ELF32_ST_BIND(sym->st_info);
     char* name = reader->symstr + sym->st_name;
-    if (bind == STB_GLOBAL && elf_reader_is_defined_section(reader, sym->st_shndx)) {
+    if ((bind == STB_GLOBAL || bind == STB_WEAK) && elf_reader_is_defined_section(reader, sym->st_shndx)) {
       vec_append(&names, &name);
     }
   }

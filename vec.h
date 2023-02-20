@@ -30,10 +30,22 @@ static inline struct vec vec_create(int itemsize) {
   return vec;
 }
 
+/*
+ * Don't malloc so we don't need to free anything
+ */
+static inline struct vec vec_create_nomalloc(int itemsize) {
+  struct vec vec;
+  vec.itemsize = itemsize;
+  vec.capacity = 0;
+  vec.len = 0;
+  vec.data = NULL;
+  return vec;
+}
+
 static inline void vec_append(struct vec* vec, void *itemptr) {
   if (vec->len == vec->capacity) {
     vec->capacity <<= 1;
-    vec->data =realloc(vec->data, vec->capacity * vec->itemsize);
+    vec->data = realloc(vec->data, vec->capacity * vec->itemsize);
   }
   memcpy(vec->data + vec->len * vec->itemsize, itemptr, vec->itemsize);
   ++vec->len;
