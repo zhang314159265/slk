@@ -5,6 +5,7 @@
 #pragma once
 
 #include "check.h"
+#include "util.h"
 
 #define VEC_FOREACH_I(vec_ptr, item_type, item_ptr, i) \
   item_type* item_ptr = NULL; \
@@ -20,6 +21,8 @@ struct vec {
   int len; // in number of item
   void *data;
 };
+
+static inline void vec_append(struct vec* vec, void *itemptr);
 
 static inline struct vec vec_create(int itemsize) {
   struct vec vec;
@@ -42,6 +45,35 @@ static inline struct vec vec_create_nomalloc(int itemsize) {
   return vec;
 }
 
+// spaces preceding items with be ignored. But spaces inside or after items will be
+// kept.
+static inline struct vec vec_create_from_csv(const char* csv) {
+  struct vec list = vec_create(sizeof(char*));
+
+  const char *l = csv, *r;
+  while (*l) {
+    while (isspace(*l)) {
+      ++l;
+    }
+    if (!*l) {
+      break;
+    }
+    r = l;
+    while (*r && *r != ',') {
+      ++r;
+    }
+    if (r - l > 0) {
+      char* item = lenstrdup(l, r - l);
+      vec_append(&list, &item);
+    }
+    l = r;
+    if (*l == ',') {
+      ++l;
+    }
+  }
+  return list;
+}
+
 static inline void vec_append(struct vec* vec, void *itemptr) {
   if (vec->len == vec->capacity) {
     vec->capacity <<= 1;
@@ -57,7 +89,16 @@ static inline void* vec_get_item(struct vec* vec, int idx) {
 }
 
 static inline void vec_free(struct vec* vec) {
-  assert(vec->data);
-  free(vec->data);
+  if (vec->data) {
+    free(vec->data);
+  }
   vec->data = NULL;
+}
+
+static inline void vec_free_str(struct vec* vec) {
+  // free every item string first
+  VEC_FOREACH(vec, char*, item_ptr) {
+    free(*item_ptr);
+  }
+  vec_free(vec);
 }

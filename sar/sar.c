@@ -1,4 +1,4 @@
-/* TODO: if this get complext, split arctx from main program */
+/* TODO: gradually split stuff into arctx.h from main program */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -12,23 +12,11 @@
 #include "vec.h"
 #include "elf_member.h"
 #include "elf_reader.h"
+#include "arctx.h"
 
 #define SIGNATURE "!<arch>\n"
 #define SIGNATURE_LEN 8
 #define FILE_HEADER_LEN 60
-
-struct arctx {
-  int file_size;
-  FILE* fp;
-  char* buf; // to simply the implementation we load the whole file into buf
-  struct vec elf_mem_list;
-
-  char *long_name_buf; // point somewhere in buf
-  int long_name_buflen;
-  struct vec sglist; // a list of symbol groups
-};
-
-void verify_member(struct arctx* ctx, struct elf_member* elfmem);
 
 struct file_header {
   char file_identifier[16];
@@ -263,7 +251,7 @@ void parse_ar_file(struct arctx* ctx) {
     int is_elf = is_elf_member(ctx, payload_off, memsize);
     char *name = ar_resolve_name(ctx, hdr->file_identifier);
     if (name && is_elf) {
-      struct elf_member elfmem = elfmem_create(name, payload_off, memsize);
+      struct elf_member elfmem = elfmem_create(ctx, name, payload_off, memsize);
       vec_append(&ctx->elf_mem_list, &elfmem);
       continue;
     }
@@ -343,40 +331,7 @@ void extract_member(struct arctx* ctx, const char* mem_name) {
 void verify_member_by_name(struct arctx* ctx, const char* mem_name) {
   printf("Verify member %s\n", mem_name);
   struct elf_member* elfmem = arctx_get_elfmem_by_name(ctx, mem_name);
-  verify_member(ctx, elfmem);
-}
-
-// verify the symbols in the symbol lookup table and in elf SYMTAB section match.
-void verify_member(struct arctx* ctx, struct elf_member* elfmem) {
-  elfmem_dump(elfmem, &ctx->sglist);
-  struct vec names_in_index;
-  if (elfmem->sgidx >= 0) {
-    names_in_index = ((struct sym_group*) vec_get_item(&ctx->sglist, elfmem->sgidx))->names;
-  } else {
-    printf("\033[33mNo symbol found in the index file for %s\033[0m\n", elfmem->name);
-    names_in_index = vec_create_nomalloc(sizeof(char*));
-  }
-
-  char* elfbuf = ctx->buf + elfmem->off;
-  int elfsiz = elfmem->size;
-  struct elf_reader reader = elf_reader_create_from_buffer(elfbuf, elfsiz);
-  elf_reader_list_syms(&reader);
-
-  // TODO: verify that the symbols in the sym_group matches the
-  // defined global symbols in the elf file.
-  struct vec global_defined_names = elf_reader_get_global_defined_syms(&reader);
-  printf("global defined names in elf:\n");
-  VEC_FOREACH(&global_defined_names, char *, name_in_elf_ptr) {
-    printf(" - %s\n", *name_in_elf_ptr);
-  }
-  assert(names_in_index.len == global_defined_names.len);
-  for (int i = 0; i < names_in_index.len; ++i) {
-    char* lhs_name = *(char**) vec_get_item(&names_in_index, i);
-    char* rhs_name = *(char**) vec_get_item(&global_defined_names, i);
-    assert(strcmp(lhs_name, rhs_name) == 0);
-  }
-  vec_free(&global_defined_names);
-  printf("Pass verification for %s\n", elfmem->name);
+  elfmem_verify(elfmem, ctx);
 }
 
 void verify_all_members(struct arctx* ctx) {
@@ -384,7 +339,7 @@ void verify_all_members(struct arctx* ctx) {
   int tot = ctx->elf_mem_list.len;
   VEC_FOREACH(&ctx->elf_mem_list, struct elf_member, elfmem) {
     printf("Verifying %d/%d member...\n", idx++, tot);
-    verify_member(ctx, elfmem);
+    elfmem_verify(elfmem, ctx);
   }
   printf("Pass verifying all members in the .a file");
 }
@@ -401,13 +356,23 @@ int main(int argc, char **argv) {
     bverify = 1;
     ++argidx;
   }
+
+  struct vec target_syms = vec_create_nomalloc(sizeof(char*));
+  if (argidx + 1 < argc && strcmp(argv[argidx], "-s") == 0) {
+    target_syms = vec_create_from_csv(argv[argidx + 1]);
+    argidx += 2;
+  }
+
   const char* mem_name = NULL;
   if (argidx < argc) {
     mem_name = argv[argidx++];
   }
   struct arctx ctx = ctx_create(ar_path);
   parse_ar_file(&ctx);
-  if (!mem_name) {
+
+  if (target_syms.len > 0) {
+    arctx_resolve_symbols(&ctx, &target_syms);  
+  } else if (!mem_name) {
     if (bverify) {
       verify_all_members(&ctx);
     } else {
@@ -423,6 +388,7 @@ int main(int argc, char **argv) {
     }
   }
   ctx_free(&ctx);
+  vec_free_str(&target_syms);
   printf("bye\n");
   return 0;
 }

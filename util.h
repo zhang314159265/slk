@@ -35,11 +35,11 @@ static int make_align(int val, int align) {
   return (val + align - 1) / align * align;
 }
 
-int is_int8(int32_t val) {
+static int is_int8(int32_t val) {
   return val >= -128 && val <= 127; 
 }
 
-int hex2int(char ch) {
+static int hex2int(char ch) {
   ch = tolower(ch);
   if (ch >= '0' && ch <= '9') {
     return ch - '0';
@@ -50,7 +50,7 @@ int hex2int(char ch) {
   }
 }
 
-char* lenstrdup(const char* src, int len) {
+static char* lenstrdup(const char* src, int len) {
   char* dst = (char*) malloc(len + 1);
   assert(dst != NULL);
   memcpy(dst, src, len);
@@ -60,7 +60,7 @@ char* lenstrdup(const char* src, int len) {
 
 #include "check.h"
 
-int lenstrtoi(const char* s, int len) {
+static int lenstrtoi(const char* s, int len) {
   const char* scpy = lenstrdup(s, len);
   char* end = NULL;
   int ret = strtol(scpy, &end, 10);

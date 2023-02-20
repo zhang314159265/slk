@@ -10,20 +10,20 @@ struct sym_group {
   struct vec names; // does not own the memory for each name
 };
 
-struct sym_group sym_group_create(int header_off) {
+static struct sym_group sym_group_create(int header_off) {
   struct sym_group sg;
   sg.header_off = header_off;
   sg.names = vec_create(sizeof(char*));
   return sg;
 }
 
-void sym_group_free(struct sym_group* sg) {
+static void sym_group_free(struct sym_group* sg) {
   vec_free(&sg->names);
 }
 
 // add an entry to sym_group list.
 // XXX: use a linear search so far. Should use a hash table.
-void sglist_add_entry(struct vec* sglist, int header_off, const char* sname) {
+static void sglist_add_entry(struct vec* sglist, int header_off, const char* sname) {
   struct sym_group* sg = NULL;
   VEC_FOREACH(sglist, struct sym_group, iter_sg) {
     if (iter_sg->header_off == header_off) {

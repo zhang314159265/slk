@@ -23,7 +23,7 @@ struct elf_reader {
 /*
  * Load a segment from the elf file. Make sure the segment does not go out of range.
  */
-void *elf_reader_load_segment(struct elf_reader* reader, int start, int size) {
+static void *elf_reader_load_segment(struct elf_reader* reader, int start, int size) {
   if (size == 0) {
     return NULL;
   }
@@ -56,7 +56,7 @@ static void elf_reader_verify(struct elf_reader* reader) {
  * Get the address of section header for the given index. Fatal if the index
  * is out of range.
  */
-Elf32_Shdr* elf_reader_get_sh(struct elf_reader* reader, int shidx) {
+static Elf32_Shdr* elf_reader_get_sh(struct elf_reader* reader, int shidx) {
   assert(shidx >= 0 && shidx < reader->nsection);
   return reader->sht + shidx;
 }
@@ -64,11 +64,11 @@ Elf32_Shdr* elf_reader_get_sh(struct elf_reader* reader, int shidx) {
 /*
  * Load content of a section given its section header.
  */
-void* elf_reader_load_section(struct elf_reader* reader, Elf32_Shdr* sh) {
+static void* elf_reader_load_section(struct elf_reader* reader, Elf32_Shdr* sh) {
   return elf_reader_load_segment(reader, sh->sh_offset, sh->sh_size);
 }
 
-struct elf_reader elf_reader_create_from_buffer(const char* buf, int size) {
+static struct elf_reader elf_reader_create_from_buffer(const char* buf, int size) {
   struct elf_reader reader = {0};
   reader.file_size = size;
   reader.buf = (char *) buf;
@@ -101,7 +101,7 @@ struct elf_reader elf_reader_create_from_buffer(const char* buf, int size) {
   return reader;
 }
 
-struct elf_reader elf_reader_create(const char* path) {
+static struct elf_reader elf_reader_create(const char* path) {
   printf("Create elf reader for %s\n", path);
 
   struct stat elf_st;
@@ -118,7 +118,7 @@ struct elf_reader elf_reader_create(const char* path) {
   return elf_reader_create_from_buffer(buf, file_size);
 }
 
-const char* _sht_to_str(int sht) {
+static const char* _sht_to_str(int sht) {
   switch (sht) {
   case SHT_NULL:
     return "SHT_NULL";
@@ -137,7 +137,7 @@ const char* _sht_to_str(int sht) {
   }
 }
 
-const char *_symtype_to_str(int type) {
+static const char *_symtype_to_str(int type) {
   switch (type) {
   case STT_NOTYPE:
     return "STT_NOTYPE";
@@ -158,7 +158,7 @@ const char *_symtype_to_str(int type) {
   }
 }
 
-const char *_symbind_to_str(int bind) {
+static const char *_symbind_to_str(int bind) {
   switch (bind) {
   case STB_LOCAL:
     return "STB_LOCAL";
@@ -171,7 +171,7 @@ const char *_symbind_to_str(int bind) {
   }
 }
 
-const char *_shn_to_str(int shn, int nsec) {
+static const char *_shn_to_str(int shn, int nsec) {
   static char buf[256]; // XXX not safe..
   switch (shn) {
   case SHN_UNDEF:
@@ -188,7 +188,7 @@ const char *_shn_to_str(int shn, int nsec) {
 /*
  * List the section header table.
  */
-void elf_reader_list_sht(struct elf_reader* reader) {
+static void elf_reader_list_sht(struct elf_reader* reader) {
   printf("The file has %d sections\n", reader->nsection);
   for (int i = 0; i < reader->nsection; ++i) {
     Elf32_Shdr* shdr = elf_reader_get_sh(reader, i);
@@ -202,14 +202,29 @@ void elf_reader_list_sht(struct elf_reader* reader) {
   }
 }
 
-int elf_reader_is_defined_section(struct elf_reader* reader, int secno) {
+static int elf_reader_is_defined_section(struct elf_reader* reader, int secno) {
   return (secno > 0 && secno < reader->nsection) || secno == SHN_ABS;
+}
+
+/* return a vec of names and caller should free it. */
+static struct vec elf_reader_get_undefined_syms(struct elf_reader* reader) {
+  struct vec names = vec_create(sizeof(char*));
+  for (int i = 0; i < reader->nsym; ++i) {
+    Elf32_Sym* sym = reader->symtab + i;
+    int bind = ELF32_ST_BIND(sym->st_info);
+    char* name = reader->symstr + sym->st_name;
+    if (bind == STB_GLOBAL && sym->st_shndx == 0) {
+      vec_append(&names, &name);
+    }
+  }
+
+  return names;
 }
 
 /* return a vec of names and caller should free it.
  * Only defined global/weak symbols are returned.
  */
-struct vec elf_reader_get_global_defined_syms(struct elf_reader* reader) {
+static struct vec elf_reader_get_global_defined_syms(struct elf_reader* reader) {
   struct vec names = vec_create(sizeof(char*));
   for (int i = 0; i < reader->nsym; ++i) {
     Elf32_Sym* sym = reader->symtab + i;
@@ -224,7 +239,7 @@ struct vec elf_reader_get_global_defined_syms(struct elf_reader* reader) {
   return names;
 }
 
-void elf_reader_list_syms(struct elf_reader* reader) {
+static void elf_reader_list_syms(struct elf_reader* reader) {
   printf("The file contains %d symbols\n", reader->nsym);
   for (int i = 0; i < reader->nsym; ++i) {
     Elf32_Sym* sym = reader->symtab + i;
@@ -239,7 +254,7 @@ void elf_reader_list_syms(struct elf_reader* reader) {
   }
 }
 
-void elf_reader_free(struct elf_reader* reader) {
+static void elf_reader_free(struct elf_reader* reader) {
   if (reader->buf) {
     free(reader->buf);
   }
