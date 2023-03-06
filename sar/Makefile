@@ -7,9 +7,7 @@ build_sar:
 
 libc: build_sar
 	# ./a.out /usr/lib/gcc/x86_64-linux-gnu/11/../../../i386-linux-gnu/libc.a -s printf
-	# ./a.out /usr/lib/gcc/x86_64-linux-gnu/11/../../../i386-linux-gnu/libc.a -v
-	./a.out /usr/lib/gcc/x86_64-linux-gnu/11/../../../i386-linux-gnu/libc.a -v printf.o
-	# ./a.out /usr/lib/gcc/x86_64-linux-gnu/11/../../../i386-linux-gnu/libc.a
+	./a.out /usr/lib/gcc/x86_64-linux-gnu/11/../../../i386-linux-gnu/libc.a
 
 # TODO: parse fail
 libgcc: build_sar

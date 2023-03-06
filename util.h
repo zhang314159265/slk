@@ -68,3 +68,12 @@ static int lenstrtoi(const char* s, int len) {
   free((void*) scpy);
   return ret;
 }
+
+static uint32_t endian_swap(uint32_t val) {
+  return ((val >> 24) & 0xff)
+         | ((val >> 8) & 0xff00)
+         | ((val << 8) & 0xff0000)
+         | ((val << 24) & 0xff000000);
+}
+
+
