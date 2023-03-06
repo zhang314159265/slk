@@ -76,7 +76,11 @@ static inline struct vec vec_create_from_csv(const char* csv) {
 
 static inline void vec_append(struct vec* vec, void *itemptr) {
   if (vec->len == vec->capacity) {
-    vec->capacity <<= 1;
+    if (vec->capacity == 0) {
+      vec->capacity = 16;
+    } else {
+      vec->capacity <<= 1;
+    }
     vec->data = realloc(vec->data, vec->capacity * vec->itemsize);
   }
   memcpy(vec->data + vec->len * vec->itemsize, itemptr, vec->itemsize);
@@ -86,6 +90,15 @@ static inline void vec_append(struct vec* vec, void *itemptr) {
 static inline void* vec_get_item(struct vec* vec, int idx) {
   CHECK(idx >= 0 && idx < vec->len, "vec index out of range: index %d, size %d", idx, vec->len);
   return vec->data + idx * vec->itemsize;
+}
+
+/*
+ * The caller should use the pointer immediately since they may store some
+ * other items or be freed.
+ */
+static inline void* vec_pop_item(struct vec* vec) {
+  assert(vec->len > 0);
+  return vec->data + (--vec->len) * vec->itemsize;
 }
 
 static inline void vec_free(struct vec* vec) {
@@ -101,4 +114,18 @@ static inline void vec_free_str(struct vec* vec) {
     free(*item_ptr);
   }
   vec_free(vec);
+}
+
+/*
+ * return 1 if string is found, 0 otherwise.
+ * This does a linear scan thru the vector.
+ */
+static inline int vec_str_find(struct vec* vec, char* needle) {
+  assert(vec->itemsize == sizeof(char*));  // this is the best check we can have RN since we don't store item type
+  VEC_FOREACH(vec, char*, item_ptr) {
+    if (strcmp(*item_ptr, needle) == 0) {
+      return 1;
+    }
+  }
+  return 0;
 }

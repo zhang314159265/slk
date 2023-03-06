@@ -88,6 +88,21 @@ static struct dict_entry* _dict_find(struct dict_entry* entries, int capacity, c
 }
 
 /*
+ * Put the key/val pair to the provided entry
+ */
+static void dict_put_to_entry(struct dict* dict, struct dict_entry* entry, const char* key, int val) {
+  assert(entry->key == NULL);
+  entry->key = strdup(key);
+  entry->val = val;
+  ++dict->size;
+
+  // expand at the end to avoid invaidate entry ptr
+  if ((dict->size << 1) >= dict->capacity) {
+    dict_expand(dict);
+  }
+}
+
+/*
  * Return the number of entries created.
  */
 static int dict_put(struct dict* dict, const char* key, int val) {
@@ -99,9 +114,7 @@ static int dict_put(struct dict* dict, const char* key, int val) {
     entry->val = val;
     return 0;
   } else { // insert
-    entry->key = strdup(key);
-    entry->val = val;
-    ++dict->size;
+    dict_put_to_entry(dict, entry, key, val);
     return 1;
   }
 }
@@ -112,6 +125,10 @@ static int dict_lookup_nomiss(struct dict* dict, const char *key) {
   return entry->val;
 }
 
+/*
+ * Always return an non-Null dict_entry pointer. p_dict_entry->key will
+ * be NULL if the key is not found.
+ */
 static struct dict_entry* dict_lookup(struct dict* dict, const char *key) {
   return _dict_find(dict->entries, dict->capacity, key);
 }

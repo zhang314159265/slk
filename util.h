@@ -76,4 +76,7 @@ static uint32_t endian_swap(uint32_t val) {
          | ((val << 24) & 0xff000000);
 }
 
-
+static int startswith(const char* s, const char* t) {
+  int len = strlen(t);
+  return strncmp(s, t, len) == 0;
+}

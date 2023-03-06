@@ -50,7 +50,9 @@ void elfmem_free(struct elf_member* mem) {
 
 // verify the symbols in the symbol lookup table and in elf SYMTAB section match.
 void elfmem_verify(struct elf_member* elfmem, struct arctx* ctx) {
+  #if 0
   elfmem_dump(elfmem, &ctx->sglist);
+  #endif
   struct vec names_in_index;
   if (elfmem->sgidx >= 0) {
     names_in_index = ((struct sym_group*) vec_get_item(&ctx->sglist, elfmem->sgidx))->names;
@@ -67,5 +69,7 @@ void elfmem_verify(struct elf_member* elfmem, struct arctx* ctx) {
     char* rhs_name = *(char**) vec_get_item(&elfmem->provide_syms, i);
     assert(strcmp(lhs_name, rhs_name) == 0);
   }
+  #if 0
   printf("Pass verification for %s\n", elfmem->name);
+  #endif
 }

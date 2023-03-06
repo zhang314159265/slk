@@ -26,22 +26,12 @@ A linker implemented in C.
 
 # Scratch
 
-- enhancle sar to figure out what are the minimal set of .o files to fullfil the pass in list of symbols.
-  - only consider GLOBAL UNDEFINED SYMBOLS as new symbols that need to be fullfilled for now
-  - how to handle the case that multiple .o files defines the same symbol (some may be WEAK symbols)
-
-- enhancle arctx:
-  // TODO: for each elf_member store the list of symbols it needs and the list of symbols it provides.
-  // TODO: add a dict to the ctx to map a symbol to the index of elf_member that defines it.
-
-- TODO: move the verificatoin to be an essential step of ar file parsing and remove itst reciple from Makefile
+- TODO: create my own simple libc (to provide printf and `__libc_start_main`) <+++
 
 - TODO: do 3 ways of flatten static lib in linking
   - fully flatten [DONE]
-  - automatic flatten <== TODO HERE, find what's the min list of .o files.
+  - automatic flatten. find what's the min list of .o files. [DONE]
   - manual flatten (may skip if automatic flatten shows there are too many items after flattening)
-
-- TODO: create my own simple libc (to provide printf and `__libc_start_main`)
 
 - TODO: after creating my own simple libc, create my own crt object files.
 

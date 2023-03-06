@@ -80,7 +80,15 @@ static void arctx_parse_sym_lookup_table(struct arctx* ctx, const char* payload,
     sglist_add_entry(&ctx->sglist, loclist[i], namelist[i]);
   }
 
-  assert(off == size);
+  // there may be padding bytes after the last name. Assume there is at most 1 padding
+  // byte and the byte should be '\0'. Revise if it's not true.
+  if (off < size) {
+    assert(off % 2); // padding only happens if off is odd
+    assert(payload[off] == '\0');
+    ++off;
+  }
+
+  CHECK(off == size, "Fail to parse symbol lookup table off %d v.s. size %d", off, size);
   free(loclist);
   free(namelist);
 
@@ -187,6 +195,7 @@ static void arctx_free(struct arctx* ctx) {
     sym_group_free(sg);
   }
   vec_free(&ctx->sglist);
+  dict_free(&ctx->symname2memidx);
 }
 
 // return nULL if not found
@@ -228,7 +237,9 @@ static void arctx_verify_all_members(struct arctx* ctx) {
   int idx = 0;
   int tot = ctx->elf_mem_list.len;
   VEC_FOREACH(&ctx->elf_mem_list, struct elf_member, elfmem) {
+    #if 0
     printf("Verifying %d/%d member...\n", idx++, tot);
+    #endif
     elfmem_verify(elfmem, ctx);
   }
   printf("Pass verifying all members in the .a file\n");
@@ -252,6 +263,27 @@ static void arctx_assign_sym_group_to_elf_file(struct arctx* ctx) {
       }
     }
     assert(found_elf);
+  }
+}
+
+static void arctx_build_symname2memidx(struct arctx* ctx) {
+  ctx->symname2memidx = dict_create(); 
+  VEC_FOREACH_I(&ctx->elf_mem_list, struct elf_member, memptr, i) {
+    VEC_FOREACH(&memptr->provide_syms, char*, pstr) {
+      // add the mapping between *pstr and i to symname2memidx
+      struct dict_entry* pentry = dict_lookup(&ctx->symname2memidx, *pstr);
+      if (pentry->key) {
+        struct elf_member* prevmemptr = vec_get_item(&ctx->elf_mem_list, pentry->val);
+        // the previous definition wins. Should that be fine?
+        //
+        // Too many entrys like __x86.get_pc_thunk.ax, ignore them.
+        if (!startswith(pentry->key, "__x86.get_pc_thunk")) {
+          printf("\033[33mSymbol %s redefined, %s > %s\033[0m\n", pentry->key, prevmemptr->name, memptr->name);
+        }
+        continue;
+      }
+      dict_put_to_entry(&ctx->symname2memidx, pentry, *pstr, i);
+    }
   }
 }
 
@@ -319,6 +351,7 @@ static void arctx_parse(struct arctx* ctx) {
   }
   printf("PASS PARSING!\n");
   arctx_verify_all_members(ctx);
+  arctx_build_symname2memidx(ctx);
 }
 
 static struct arctx arctx_create(const char* path) {
@@ -348,7 +381,7 @@ static struct arctx arctx_create(const char* path) {
 /*
  * target_syms will be mutated.
  */
-static void arctx_resolve_symbols(struct arctx* ctx, struct vec* target_syms) {
+static void arctx_resolve_symbols(struct arctx* ctx, struct vec* target_syms, struct vec* predefined_syms) {
   assert(target_syms->len > 0);
   printf("Need resolve the following %d symbols:\n", target_syms->len);
   VEC_FOREACH(target_syms, char*, itemptr) {
@@ -358,6 +391,41 @@ static void arctx_resolve_symbols(struct arctx* ctx, struct vec* target_syms) {
   struct dict added_file = dict_create(); // value is not used
 
   // resolve symbols in stack order
-  assert(false && "arctx_resolve_symbols ni");
-  assert(target_syms->len == 0); // successfully resolve all symbols
+  while (target_syms->len > 0) {
+    char* sym = *(char**) vec_pop_item(target_syms);
+    // linear scan is fine since predefined_syms usually is quite a small list.
+    if (vec_str_find(predefined_syms, sym)) {
+      free(sym);
+      continue;
+    }
+    struct dict_entry* entry = dict_lookup(&ctx->symname2memidx, sym);
+    if (!entry->key) {
+      FAIL("Symbol not found %s\n", sym);
+    }
+    int elfmem_idx = entry->val;
+    struct elf_member* elfmem = vec_get_item(&ctx->elf_mem_list, elfmem_idx);
+
+    if (dict_put(&added_file, elfmem->name, 0) > 0) {
+      printf("Add file %s\n", elfmem->name);
+      // add the needed symbols
+      VEC_FOREACH(&elfmem->need_syms, char*, pstr) {
+        char *newsym = strdup(*pstr);
+        vec_append(target_syms, &newsym);
+        #if 0
+        printf(" - need %s\n", newsym);
+        #endif
+      }
+    }
+    free(sym);
+  }
+
+  const char* path = "/tmp/dep_obj_list";
+  printf("Write %d dependencies to %s\n", added_file.size, path);
+  FILE* fp = fopen(path, "w");
+  DICT_FOREACH(&added_file, entry_ptr) {
+    fprintf(fp, "%s\n", entry_ptr->key);
+  }
+  fclose(fp);
+  
+  dict_free(&added_file);
 }
