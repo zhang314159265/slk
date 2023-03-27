@@ -17,16 +17,19 @@ A linker implemented in C.
 - [ar - wikipedia](https://en.wikipedia.org/wiki/Ar_(Unix)): explains the format of an ar file.
 
 # Low Prio
-- check how ar file works: understand the format and how linker handles it
 - why nm shows no symbols for libc.so but `readelf -s` works
 
 # Quest
-- be able to use sar to parse libc, libgcc and `libgcc_eh`
-  - currently it fails to parse libgcc
 
 # Scratch
 
 - TODO: create my own simple libc (to provide printf and `__libc_start_main`) <+++
+  - replace libc.a, libgcc.a, `libgcc_eh.a`
+  - replace crtx.o
+
+- TODO: create my own linker to handle my own libc and make sum work <++
+- TODO: should I remove the code that manually figure out the min set of .o? <++ LOW-PRIO
+- TODO: ld + min .o set result in a 755K a.out. Is this a general problem? We can improve linker to let the out a.out file much smaller.
 
 - TODO: do 3 ways of flatten static lib in linking
   - fully flatten [DONE]
