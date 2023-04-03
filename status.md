@@ -23,8 +23,7 @@ A linker implemented in C.
 
 # Scratch
 
-- TODO: create my own simple libc (to provide printf and `__libc_start_main`) <+++
-  - replace libc.a, libgcc.a, `libgcc_eh.a`
+- use my own crt for sum.o
   - replace crtx.o
 
 - TODO: create my own linker to handle my own libc and make sum work <++

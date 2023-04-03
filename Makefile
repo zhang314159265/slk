@@ -69,7 +69,7 @@ MIN_LIBGCC_EH_O := $(patsubst %, artifact/libgcc_eh.o/%, $(MIN_LIBGCC_EH_O))
 runld_slibc:
 	make -C slibc
 	@rm -f ./a.out
-	@ld -melf_i386 -static $(CRT1) $(CRTi) artifact/sum.gas.o slibc/slibc.a $(CRTn)
+	@ld -melf_i386 -static artifact/sum.gas.o slibc/slibc.a
 	@./a.out
 
 runld_min_obj_list:

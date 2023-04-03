@@ -82,3 +82,10 @@ void __libc_start_main(void) {
   int ret = main(0, 0);
   SYSCALL1(SYS_exit, ret);
 }
+
+/*
+ * ELF entry point.
+ */
+void _start(void) {
+  __libc_start_main();
+}
