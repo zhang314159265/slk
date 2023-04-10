@@ -23,10 +23,15 @@ A linker implemented in C.
 
 # Scratch
 
-- use my own crt for sum.o
-  - replace crtx.o
+- TODO: make slk work for sum.o and slibc
+  - combine .text/.data/.tss from all elf readers
+    - respect alignment
+    - decide a starting address
+  - do relocation
+  - write out an executable elf file.
+    - write a trivial executable elf file with hardcoded content. <+++++++ TODO HERE
 
-- TODO: create my own linker to handle my own libc and make sum work <++
+
 - TODO: should I remove the code that manually figure out the min set of .o? <++ LOW-PRIO
 - TODO: ld + min .o set result in a 755K a.out. Is this a general problem? We can improve linker to let the out a.out file much smaller.
 
@@ -34,8 +39,6 @@ A linker implemented in C.
   - fully flatten [DONE]
   - automatic flatten. find what's the min list of .o files. [DONE]
   - manual flatten (may skip if automatic flatten shows there are too many items after flattening)
-
-- TODO: after creating my own simple libc, create my own crt object files.
 
 - TODO: fully understand `make runld` with `USE_STATIC=1`
 

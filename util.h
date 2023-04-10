@@ -80,3 +80,10 @@ static int startswith(const char* s, const char* t) {
   int len = strlen(t);
   return strncmp(s, t, len) == 0;
 }
+
+static int endswith(const char* s, const char* t) {
+  int l1 = strlen(s);
+  int l2 = strlen(t);
+
+  return l1 >= l2 && strcmp(s + l1 - l2, t) == 0;
+}

@@ -1,6 +1,8 @@
 #pragma once
 
 #include "dict.h"
+#include "sym_group.h"
+#include "elf_member.h"
 #include <sys/stat.h>
 
 #define SIGNATURE "!<arch>\n"

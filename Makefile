@@ -66,6 +66,16 @@ MIN_LIBGCC_O := $(patsubst %, artifact/libgcc.o/%, $(MIN_LIBGCC_O))
 MIN_LIBGCC_EH_O := $(shell cat artifact/libgcc_eh_min_obj_list)
 MIN_LIBGCC_EH_O := $(patsubst %, artifact/libgcc_eh.o/%, $(MIN_LIBGCC_EH_O))
 
+runslk_slibc:
+	make -C slibc
+	make slk
+	@rm -f ./a.out
+	@./out/slk artifact/sum.gas.o slibc/slibc.a
+	@./a.out
+
+slk:
+	gcc -I. slk.c sar/elf_member.c -o out/slk
+
 runld_slibc:
 	make -C slibc
 	@rm -f ./a.out
