@@ -22,6 +22,7 @@ typedef uint16_t Elf32_Section;
 #define EI_NIDENT 16
 
 #define ET_REL 1 /* relocatable file */
+#define ET_EXEC 2 /* executable file */
 
 #define EM_386 3
 
@@ -142,3 +143,14 @@ typedef struct {
    */
   Elf32_Word r_info;
 } Elf32_Rel;
+
+typedef struct {
+  Elf32_Word p_type; /* segment type */
+  Elf32_Off p_offset;
+  Elf32_Addr p_vaddr;
+  Elf32_Addr p_paddr;
+  Elf32_Addr p_filesz;
+  Elf32_Word p_memsz;
+  Elf32_Word p_flags;
+  Elf32_Word p_align;
+} Elf32_Phdr;

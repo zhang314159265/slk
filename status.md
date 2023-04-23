@@ -23,13 +23,15 @@ A linker implemented in C.
 
 # Scratch
 
+- write a trivial executable elf file with hardcoded content. <+++++++ TODO HERE
+  - next: write out the elf file
+
 - TODO: make slk work for sum.o and slibc
   - combine .text/.data/.tss from all elf readers
     - respect alignment
     - decide a starting address
   - do relocation
   - write out an executable elf file.
-    - write a trivial executable elf file with hardcoded content. <+++++++ TODO HERE
 
 
 - TODO: should I remove the code that manually figure out the min set of .o? <++ LOW-PRIO

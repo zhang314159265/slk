@@ -1,5 +1,5 @@
 CFLAGS := -I..
 
 all:
-	gcc test_elf_writer.c $(CFLAGS)
+	gcc -m32 test_elf_writer.c $(CFLAGS)
 	./a.out
