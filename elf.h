@@ -144,6 +144,12 @@ typedef struct {
   Elf32_Word r_info;
 } Elf32_Rel;
 
+#define PT_LOAD 1 /* loadable program segment */
+
+#define PF_X (1 << 0) /* segment is executable */
+#define PF_W (1 << 1) /* segment is writable */
+#define PF_R (1 << 2) /* segment is readable */
+
 typedef struct {
   Elf32_Word p_type; /* segment type */
   Elf32_Off p_offset;

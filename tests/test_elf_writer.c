@@ -25,7 +25,7 @@ void test_hand_crafted_file() {
   elf_writer_write(&writer, path);
   elf_writer_free(&writer);
   str_free(&textstr);
-  assert(false && "test manually crafted file ni");
+  assert(false && "execute manual.elf in the test!");
   // TODO: execute the manual.elf
 }
 
