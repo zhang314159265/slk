@@ -24,7 +24,9 @@ A linker implemented in C.
 # Scratch
 
 - write a trivial executable elf file with hardcoded content. <+++++++ TODO HERE
-  - next: write out the elf file <+++++
+  - create string section table.
+    - `readelf -S` current shows:
+      "[ 0] <no-strings>      NULL            00000000 000000 000000 00      0   0  0"
 
 - TODO: make slk work for sum.o and slibc
   - combine .text/.data/.tss from all elf readers

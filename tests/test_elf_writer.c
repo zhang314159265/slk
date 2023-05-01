@@ -21,11 +21,12 @@ void test_hand_crafted_file() {
 
   const char* path = "/tmp/manual.elf";
   struct elf_writer writer = elf_writer_create();
-  elf_write_set_text_manually(&writer, &textstr);
+  elf_writer_set_text_manually(&writer, &textstr);
   elf_writer_write(&writer, path);
   elf_writer_free(&writer);
   str_free(&textstr);
   assert(false && "execute manual.elf in the test!");
+
   // TODO: execute the manual.elf
 }
 
