@@ -6,6 +6,7 @@ A linker implemented in C.
 - `ld --verbose` will show the default linker script; `ld -melf_i386 --verbase` to show the linker script for 32bit linking.
 - `__libc_start_main` caled by `_start` will call main. It's defined in libc. But `readelf -s libc.so | grep __libc_start_main` may shows up nothing since the symbol name with version string is too long and get truncated. Add `-W` option to readelf solve the problem.
   - It's weird that `nm libc.so` reports no symbols: "nm: /lib/i386-linux-gnu/libc.so.6: no symbols" , but 'readelf -s' works.
+- A segfault executable will have 139 (128 + SIGSEGV which is 11) as the exit code. But an executable calling exit(139) will not be recognized by make or gdb as segfault. Not sure the mechanism of segfault detection yet.
 
 # Reference
 - [collect2](https://gcc.gnu.org/onlinedocs/gccint/Collect2.html): collect2 is a wrapper to ld.
@@ -22,11 +23,8 @@ A linker implemented in C.
 # Quest
 
 # Scratch
-
 - write a trivial executable elf file with hardcoded content. <+++++++ TODO HERE
-  - create string section table.
-    - `readelf -S` current shows:
-      "[ 0] <no-strings>      NULL            00000000 000000 000000 00      0   0  0"
+  - call chmod & execve in the test <+++ CAN DO THIS NEXT WEEK
 
 - TODO: make slk work for sum.o and slibc
   - combine .text/.data/.tss from all elf readers
@@ -34,7 +32,6 @@ A linker implemented in C.
     - decide a starting address
   - do relocation
   - write out an executable elf file.
-
 
 - TODO: should I remove the code that manually figure out the min set of .o? <++ LOW-PRIO
 - TODO: ld + min .o set result in a 755K a.out. Is this a general problem? We can improve linker to let the out a.out file much smaller.

@@ -23,6 +23,7 @@ struct elf_writer {
   struct vec phdrtab; // TODO make use of this
 
   struct str shstrtab; // contains section names
+  uint16_t shn_text;
 
   struct vec shtab; // contains a list of 'Elf32_Shdr'
   struct vec segtab; // contains a list of 'struct segment'
@@ -95,6 +96,7 @@ static struct elf_writer elf_writer_create() {
 
   elf_writer_add_section(&writer, NULL, 0, 0, 0, 0, 0, 0);
   writer.ehdr.e_shstrndx = elf_writer_add_section(&writer, ".shstrtab", SHT_STRTAB, 0, 0, 0, 1, 0);
+  writer.shn_text = elf_writer_add_section(&writer, ".text", SHT_PROGBITS, SHF_ALLOC | SHF_EXECINSTR, 0, 0, 1, 0);
   return writer;
 }
 
@@ -131,10 +133,21 @@ static int elf_writer_add_section(struct elf_writer* writer, const char* name, u
 }
 
 static void elf_writer_write(struct elf_writer* writer, const char* path) {
+  // THIS ALIGNMENT is THE KEY TO make the generated ELF file work!
+  writer->next_file_off = make_align(writer->next_file_off, 4096);
   struct segment textseg = segment_create(
     writer->next_file_off,
     writer->next_va,
     &writer->textbuf);
+
+  // Having a .text section header is good but not necessary to make the ELF
+  // file work.
+  Elf32_Shdr* sh_text = vec_get_item(&writer->shtab, writer->shn_text);
+  // set this address is critical to let 'readelf -l' figure out what sections
+  // belong to a segment.
+  sh_text->sh_addr = textseg.phdr.p_vaddr;
+  sh_text->sh_size = textseg.phdr.p_filesz;
+  sh_text->sh_offset = writer->next_file_off;
 
   writer->next_file_off = make_align(writer->next_file_off + textseg.phdr.p_filesz, ALIGN_BYTES);
   writer->next_va = make_align(writer->next_va + textseg.phdr.p_memsz, ALIGN_BYTES);
