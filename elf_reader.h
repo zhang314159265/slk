@@ -4,6 +4,7 @@
 #include "elf.h"
 #include "vec.h"
 #include <sys/stat.h>
+#include <string.h>
 
 struct elf_reader {
   char *buf; // the buffer storing the whole file content
@@ -59,6 +60,15 @@ static void elf_reader_verify(struct elf_reader* reader) {
 static Elf32_Shdr* elf_reader_get_sh(struct elf_reader* reader, int shidx) {
   assert(shidx >= 0 && shidx < reader->nsection);
   return reader->sht + shidx;
+}
+
+static Elf32_Shdr* elf_reader_get_sh_by_name(struct elf_reader* reader, const char* target_name) {
+  for (Elf32_Shdr* sec = reader->sht; sec < reader->sht + reader->nsection; ++sec) {
+    if (strcmp(reader->shstrtab + sec->sh_name, target_name) == 0) {
+      return sec;
+    }
+  }
+  return NULL;
 }
 
 /*
@@ -132,6 +142,8 @@ static const char* _sht_to_str(int sht) {
     return "SHT_NOBITS";
   case SHT_REL:
     return "SHT_REL";
+  case SHT_GROUP:
+    return "SHT_GROUP";
   default:
     FAIL("Unrecognized section header type %d", sht);
   }

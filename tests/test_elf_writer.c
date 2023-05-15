@@ -16,7 +16,7 @@ void test_hand_crafted_file() {
   #endif
   struct str textstr = str_create(16);
   str_append(&textstr, 0xb8); str_append(&textstr, 0x01); str_append(&textstr, 0x00); str_append(&textstr, 0x00); str_append(&textstr, 0x00);
-  str_append(&textstr, 0xbb); str_append(&textstr, 37); str_append(&textstr, 0x00); str_append(&textstr, 0x00); str_append(&textstr, 0x00);
+  str_append(&textstr, 0xbb); str_append(&textstr, 52); str_append(&textstr, 0x00); str_append(&textstr, 0x00); str_append(&textstr, 0x00);
   str_append(&textstr, 0xcd); str_append(&textstr, 0x80);
 
   const char* path = "/tmp/manual.elf";

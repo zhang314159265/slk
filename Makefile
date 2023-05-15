@@ -74,7 +74,7 @@ runslk_slibc:
 	@./a.out
 
 slk:
-	gcc -I. slk.c sar/elf_member.c -o out/slk
+	gcc -m32 -I. slk.c sar/elf_member.c -o out/slk
 
 runld_slibc:
 	make -C slibc

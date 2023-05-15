@@ -22,9 +22,16 @@ A linker implemented in C.
 
 # Quest
 
+# Plan
+- make slk work for sum.o and slibc
+- refactor sas ans slk to avoid duplicate code
+- support got/plt and dynamic linking
+
 # Scratch
+
 - write a trivial executable elf file with hardcoded content. <+++++++ TODO HERE
   - call chmod & execve in the test <+++ CAN DO THIS NEXT WEEK
+
 
 - TODO: make slk work for sum.o and slibc
   - combine .text/.data/.tss from all elf readers

@@ -13,8 +13,7 @@
 #include "vec.h"
 #include "segment.h"
 
-// #define ENTRY 0x50000000
-#define ENTRY 0x05000000
+#define ENTRY 0x50000000
 #define ALIGN_BYTES 16
 
 struct elf_writer {

@@ -32,6 +32,7 @@ typedef uint16_t Elf32_Section;
 #define SHT_STRTAB 3 /* string table */
 #define SHT_NOBITS 8 /* program space with no data (.bss) */
 #define SHT_REL 9 /* relocation entries, no addends */
+#define SHT_GROUP 17 /* Check https://refspecs.linuxbase.org/elf/gabi4+/ch4.sheader.html for details */
 
 /* legal values for sh_flags (section flags). */
 #define SHF_WRITE (1 << 0) /* writable */
