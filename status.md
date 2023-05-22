@@ -29,7 +29,14 @@ A linker implemented in C.
 
 # Scratch
 
-- write a trivial executable elf file with hardcoded content. <+++++++ TODO HERE
+- TODO: simplify the ELF file for sum.o, lib.o, printf.o # <+++++++ TODO HERE
+  - can we remove `.eh_frame` and its relocation
+  - can we remove the `SHT_GROUP`
+  - can we remove the `.note.GNU-stack` and comment sections
+  - can we remove `.text.__x86.get_pc_thunk.ax`
+
+
+- write a trivial executable elf file with hardcoded content. 
   - call chmod & execve in the test <+++ CAN DO THIS NEXT WEEK
 
 
@@ -37,7 +44,7 @@ A linker implemented in C.
   - combine .text/.data/.tss from all elf readers
     - respect alignment
     - decide a starting address
-  - do relocation
+  - do relocation <== HERE
   - write out an executable elf file.
 
 - TODO: should I remove the code that manually figure out the min set of .o? <++ LOW-PRIO

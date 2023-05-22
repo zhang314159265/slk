@@ -44,6 +44,13 @@ static uint32_t lkctx_decide_sections_va(struct lkctx* ctx, uint32_t next_va, co
   return next_va;
 }
 
+static void lkctx_relocate(struct lkctx* ctx) {
+  VEC_FOREACH(&ctx->readers, struct elf_reader, rdptr) {
+    elf_reader_list_sht(rdptr);
+  }
+  assert(false && "relocate ni");
+}
+
 /*
  * I plan to implement linking in 2 passes
  * Pass1:
@@ -66,6 +73,8 @@ static void lkctx_link(struct lkctx* ctx) {
   next_va = lkctx_decide_sections_va(ctx, next_va, ".data");
   next_va = lkctx_decide_sections_va(ctx, next_va, ".bss");
   next_va = lkctx_decide_sections_va(ctx, next_va, ".rodata");
+
+  lkctx_relocate(ctx);
 
   assert(false && "link ni");
 }
