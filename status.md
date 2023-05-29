@@ -29,15 +29,11 @@ A linker implemented in C.
 
 # Scratch
 
-- TODO: simplify the ELF file for sum.o, lib.o, printf.o # <+++++++ TODO HERE
-  - can we remove `.eh_frame` and its relocation
-  - can we remove the `SHT_GROUP`
-  - can we remove the `.note.GNU-stack` and comment sections
-  - can we remove `.text.__x86.get_pc_thunk.ax`
-
-
-- write a trivial executable elf file with hardcoded content. 
-  - call chmod & execve in the test <+++ CAN DO THIS NEXT WEEK
+- TODO: simplify the ELF file for sum.o, lib.o, printf.o # <+++++++ GOOD STRATEGY!
+  - can we remove `.eh_frame` and its relocation [YES]
+  - can we remove the `SHT_GROUP` [NO]
+  - can we remove the `.note.GNU-stack` and `.comment` sections [YES]
+  - can we remove `.text.__x86.get_pc_thunk.ax` [NO]
 
 
 - TODO: make slk work for sum.o and slibc
