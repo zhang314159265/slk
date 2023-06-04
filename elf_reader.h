@@ -251,18 +251,22 @@ static struct vec elf_reader_get_global_defined_syms(struct elf_reader* reader) 
   return names;
 }
 
+static void elf_reader_dump_symbol(struct elf_reader* reader, Elf32_Sym* sym) {
+  int type = ELF32_ST_TYPE(sym->st_info);
+  int bind = ELF32_ST_BIND(sym->st_info);
+  printf("  name '%s' type %s bind %s shndx %s\n",
+    reader->symstr + sym->st_name,
+    _symtype_to_str(type),
+    _symbind_to_str(bind),
+    _shn_to_str(sym->st_shndx, reader->nsection)
+  );
+}
+
 static void elf_reader_list_syms(struct elf_reader* reader) {
   printf("The file contains %d symbols\n", reader->nsym);
   for (int i = 0; i < reader->nsym; ++i) {
     Elf32_Sym* sym = reader->symtab + i;
-    int type = ELF32_ST_TYPE(sym->st_info);
-    int bind = ELF32_ST_BIND(sym->st_info);
-    printf("  %d: name '%s' type %s bind %s shndx %s\n",
-      i, reader->symstr + sym->st_name,
-      _symtype_to_str(type),
-      _symbind_to_str(bind),
-      _shn_to_str(sym->st_shndx, reader->nsection)
-    );
+		elf_reader_dump_symbol(reader, sym);
   }
 }
 

@@ -28,19 +28,18 @@ A linker implemented in C.
 - support got/plt and dynamic linking
 
 # Scratch
-
-- TODO: simplify the ELF file for sum.o, lib.o, printf.o # <+++++++ GOOD STRATEGY!
-  - can we remove `.eh_frame` and its relocation [YES]
-  - can we remove the `SHT_GROUP` [NO]
-  - can we remove the `.note.GNU-stack` and `.comment` sections [YES]
-  - can we remove `.text.__x86.get_pc_thunk.ax` [NO]
-
+- TODO: resolve undefined symbols
+- TODO: go thru all the relocation entires that need to be resolved
+  - all good for sum.xx.o
+  - TODO: check how to avoid GOT/PLT relocations in slibc for now
 
 - TODO: make slk work for sum.o and slibc
   - combine .text/.data/.tss from all elf readers
     - respect alignment
     - decide a starting address
-  - do relocation <== HERE
+  - do relocation 
+    - dump all relocation entries <++++++++++++++ TODO HERE
+    - handle .text first <+++++++++++ TODO HERE
   - write out an executable elf file.
 
 - TODO: should I remove the code that manually figure out the min set of .o? <++ LOW-PRIO

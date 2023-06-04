@@ -66,20 +66,23 @@ MIN_LIBGCC_O := $(patsubst %, artifact/libgcc.o/%, $(MIN_LIBGCC_O))
 MIN_LIBGCC_EH_O := $(shell cat artifact/libgcc_eh_min_obj_list)
 MIN_LIBGCC_EH_O := $(patsubst %, artifact/libgcc_eh.o/%, $(MIN_LIBGCC_EH_O))
 
-all: runld_slibc
+all: runslk_slibc
+
+# TODO: apply '-R .text.__x86.*' cause failure in objcopy
+REMOVE_SECTION := -R .comment -R .note.GNU-stack -R .rel.eh_frame -R .eh_frame -R .group
 
 runslk_slibc:
 	make -C slibc
 	make slk
 	@rm -f ./a.out
-	@./out/slk artifact/sum.gas.o slibc/slibc.a
+	objcopy $(REMOVE_SECTION) artifact/sum.gas.o out/sum.gas.o
+	objcopy $(REMOVE_SECTION) artifact/slibc/lib.o out/lib.o
+	objcopy $(REMOVE_SECTION) artifact/slibc/printf.o out/printf.o
+	@./out/slk out/sum.gas.o out/lib.o out/printf.o
 	@./a.out
 
 slk:
 	gcc -m32 -I. slk.c sar/elf_member.c -o out/slk
-
-# TODO: apply '-R .text.__x86.*' cause failure in objcopy
-REMOVE_SECTION := -R .comment -R .note.GNU-stack -R .rel.eh_frame -R .eh_frame -R .group
 
 runld_slibc:
 	make -C slibc

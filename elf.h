@@ -58,9 +58,6 @@ typedef uint16_t Elf32_Section;
 #define STT_GNU_IFUNC 10 /* symbol is indirect code object */
 #define STT_HIOS 12 /* end of os-specific */
 
-#define R_386_32 1 /* direct 32 bit */
-#define R_386_PC32 2 /* PC relative 32 bit */
-
 typedef struct {
   unsigned char e_ident[EI_NIDENT]; /* magic number and other info */
   Elf32_Half e_type; /* object file type */
@@ -134,6 +131,9 @@ typedef struct {
   unsigned char st_other; /* symbol visibility */
   Elf32_Section st_shndx; /* section index */
 } Elf32_Sym;
+
+#define R_386_32 1 /* direct 32 bit */
+#define R_386_PC32 2 /* PC relative 32 bit */
 
 typedef struct {
   Elf32_Addr r_offset; /* address */
