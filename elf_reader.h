@@ -3,11 +3,13 @@
 #include "util.h"
 #include "elf.h"
 #include "vec.h"
+#include "dict.h"
 #include <sys/stat.h>
 #include <string.h>
 
 struct elf_reader {
-  char *buf; // the buffer storing the whole file content
+  char *buf; // the buffer storing the whole file content.
+	           // may be updated during relocation.
   int file_size;
 
   Elf32_Ehdr* ehdr; // point to buf
@@ -19,6 +21,8 @@ struct elf_reader {
   Elf32_Sym* symtab;
   int nsym;
   char *symstr;
+
+	struct dict section_name_to_abs_addr;
 };
 
 /*
@@ -108,6 +112,8 @@ static struct elf_reader elf_reader_create_from_buffer(const char* buf, int size
       break;
     }
   }
+
+	reader.section_name_to_abs_addr = dict_create();
   return reader;
 }
 
@@ -274,4 +280,5 @@ static void elf_reader_free(struct elf_reader* reader) {
   if (reader->buf) {
     free(reader->buf);
   }
+	dict_free(&reader->section_name_to_abs_addr);
 }

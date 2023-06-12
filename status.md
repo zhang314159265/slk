@@ -28,10 +28,19 @@ A linker implemented in C.
 - support got/plt and dynamic linking
 
 # Scratch
-- TODO: resolve undefined symbols
-- TODO: go thru all the relocation entires that need to be resolved
-  - all good for sum.xx.o
-  - TODO: check how to avoid GOT/PLT relocations in slibc for now
+
+- TODO: resolve undefined symbols <======
+  - first of all, built a lookup table to map global symbol name to its absolute address <===
+
+
+- DONE: go thru all the relocation entires that need to be resolved. Make sure mentally I can resolve all these entries myself manually.
+  - DONE: sum.xx.o
+  - DONE: lib.o
+  - DONE: printf.o
+    - note that the switch is implemented with a jump table in .rodata section.
+      Every entry of the jump table need to be relocated by .text section.
+      The number of entries of the jump table is calculated by the literal values
+      of all the cases in the switch statement.
 
 - TODO: make slk work for sum.o and slibc
   - combine .text/.data/.tss from all elf readers
@@ -41,6 +50,8 @@ A linker implemented in C.
     - dump all relocation entries <++++++++++++++ TODO HERE
     - handle .text first <+++++++++++ TODO HERE
   - write out an executable elf file.
+
+- TODO: handle dynamic libraries and pic code (got/plt)
 
 - TODO: should I remove the code that manually figure out the min set of .o? <++ LOW-PRIO
 - TODO: ld + min .o set result in a 755K a.out. Is this a general problem? We can improve linker to let the out a.out file much smaller.

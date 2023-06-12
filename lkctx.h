@@ -1,6 +1,7 @@
 #pragma once
 
 #include "vec.h"
+#include "dict.h"
 #include "elf_reader.h"
 #include "elf_writer.h"
 
@@ -11,18 +12,21 @@ struct lkctx {
    */
   struct vec readers;
   struct elf_writer writer;
+	struct dict sym_name_to_abs_addr;  // only record global symbols
 };
 
 static struct lkctx lkctx_create() {
   struct lkctx ctx;
   ctx.readers = vec_create(sizeof(struct elf_reader));
   ctx.writer = elf_writer_create();
+	ctx.sym_name_to_abs_addr = dict_create();
   return ctx;
 }
 
 static void lkctx_free(struct lkctx* ctx) {
   vec_free(&ctx->readers);
   elf_writer_free(&ctx->writer);
+	dict_free(&ctx->sym_name_to_abs_addr);
 }
 
 static void lkctx_add_reader(struct lkctx* ctx, struct elf_reader reader) {
@@ -37,11 +41,49 @@ static uint32_t lkctx_decide_sections_va(struct lkctx* ctx, uint32_t next_va, co
     if (shdr) {
       next_va = make_align(next_va, shdr->sh_addralign);
       printf("Elf %d, section %s virtual address 0x%x size %d, algin %d\n", idx, secname, next_va, shdr->sh_size, shdr->sh_addralign);
+
+			// record the absolution address for the section
+			int status = dict_put(&rdptr->section_name_to_abs_addr, secname, next_va);
+			assert(status == 1);
+
       next_va += shdr->sh_size;
     }
     idx += 1;
   }
   return next_va;
+}
+
+static void lkctx_relocate_one_entry(struct lkctx* ctx, struct elf_reader* rdptr, Elf32_Sym* sym, int rel_type, uint32_t r_offset, Elf32_Shdr* shdr_text) {
+	uint32_t sym_abs_addr;
+	uint32_t pc_abs_addr; // for relative relocation
+	int sym_type = ELF32_ST_TYPE(sym->st_info);
+	if (sym_type == STT_SECTION) {
+		Elf32_Shdr* sec = elf_reader_get_sh(rdptr, sym->st_shndx);
+		char* sec_name = rdptr->shstrtab + sec->sh_name;
+		sym_abs_addr = dict_lookup_nomiss(&rdptr->section_name_to_abs_addr, sec_name);
+	} else if (sym_type == STT_FUNC || sym_type == STT_NOTYPE || sym_type == STT_OBJECT) {
+		char* sym_name = rdptr->symstr + sym->st_name;
+		sym_abs_addr = dict_lookup_nomiss(&ctx->sym_name_to_abs_addr, sym_name);
+	} else {
+		printf("unhandled sym_type %d\n", sym_type);
+		assert(false && "unhandled symbol type");
+	}
+
+	uint32_t* patch_loc = (uint32_t*) (rdptr->buf + shdr_text->sh_offset + r_offset);
+	if (rel_type == R_386_32) {
+		*patch_loc = *patch_loc + sym_abs_addr;
+	} else if (rel_type == R_386_PC32) {
+		// We use the PC before the increment for the relocation computation.
+		// For x86 relative jump, the instruction use the PC after increment
+		// as the base for addition. The discrepancy is resolved by storing
+		// -4 in 'patch_loc'.
+		char* text_sec_name = rdptr->shstrtab + shdr_text->sh_name;
+		uint32_t text_sec_abs_addr = dict_lookup_nomiss(&rdptr->section_name_to_abs_addr, text_sec_name);
+		pc_abs_addr = text_sec_abs_addr + r_offset;
+		*patch_loc = *patch_loc + sym_abs_addr - pc_abs_addr;
+	} else {
+		assert(false && "unsupported relocation type");
+	}
 }
 
 /*
@@ -73,6 +115,7 @@ static void lkctx_relocate_section(struct lkctx* ctx, struct elf_reader* rdptr, 
 		Elf32_Sym* cur_sym = syms + sym_idx;
 		printf("- r_offset 0x%x, sym_idx %d, rel_type %d\n", r_offset, sym_idx, rel_type);
 		elf_reader_dump_symbol(rdptr, cur_sym);
+		lkctx_relocate_one_entry(ctx, rdptr, cur_sym, rel_type, r_offset, shdr_text);
 	}
 }
 
@@ -96,7 +139,31 @@ static void lkctx_relocate(struct lkctx* ctx) {
 
 		lkctx_relocate_elf(ctx, rdptr);
   }
-  assert(false && "relocate ni");
+}
+
+void lkctx_decide_symbol_abs_addr_elf(struct lkctx* ctx, struct elf_reader* rdptr) {
+	for (int i = 0; i < rdptr->nsym; ++i) {
+		Elf32_Sym* sym = rdptr->symtab + i;
+    int type = ELF32_ST_TYPE(sym->st_info);
+    int bind = ELF32_ST_BIND(sym->st_info);
+		if (bind == STB_GLOBAL && sym->st_shndx != SHN_UNDEF) {
+			char* sym_name = rdptr->symstr + sym->st_name;
+			Elf32_Shdr* sym_section = elf_reader_get_sh(rdptr, sym->st_shndx);
+			char* sym_section_name = rdptr->shstrtab + sym_section->sh_name;
+			uint32_t section_abs_addr = dict_lookup_nomiss(&rdptr->section_name_to_abs_addr, sym_section_name);
+			uint32_t sym_abs_addr = section_abs_addr + sym->st_value;
+			int status = dict_put(&ctx->sym_name_to_abs_addr, sym_name, sym_abs_addr);
+			assert(status == 1 && "duplicate definition of symbol found");
+
+			printf("sym_name %s, sym_section_name %s, sym_abs_addr 0x%x\n", sym_name, sym_section_name, sym_abs_addr);
+		}
+	}
+}
+
+void lkctx_decide_symbol_abs_addr(struct lkctx* ctx) {
+  VEC_FOREACH(&ctx->readers, struct elf_reader, rdptr) {
+		lkctx_decide_symbol_abs_addr_elf(ctx, rdptr);
+	}
 }
 
 /*
@@ -122,6 +189,10 @@ static void lkctx_link(struct lkctx* ctx) {
   next_va = lkctx_decide_sections_va(ctx, next_va, ".bss");
   next_va = lkctx_decide_sections_va(ctx, next_va, ".rodata");
 
+	// decide te absolute address of each global symbols
+	lkctx_decide_symbol_abs_addr(ctx);
+
+	// do relocation using the absolute address of section and global symbols
   lkctx_relocate(ctx);
 
   assert(false && "link ni");

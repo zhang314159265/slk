@@ -68,7 +68,8 @@ MIN_LIBGCC_EH_O := $(patsubst %, artifact/libgcc_eh.o/%, $(MIN_LIBGCC_EH_O))
 
 all: runslk_slibc
 
-# TODO: apply '-R .text.__x86.*' cause failure in objcopy
+# TODO: apply '-R .text.__x86.*' cause failure in objcopy. This is only relevant
+# if the library is compiled as PIC code.
 REMOVE_SECTION := -R .comment -R .note.GNU-stack -R .rel.eh_frame -R .eh_frame -R .group
 
 runslk_slibc:

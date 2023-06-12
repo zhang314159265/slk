@@ -1,7 +1,8 @@
 SLIBC_SRC := $(wildcard *.c)
 SLIBC_OBJ := $(patsubst %.c,out/%.o,$(SLIBC_SRC))
 
-CFLAGS := -m32 -Werror -Wall
+# -fno-pic to avoid generating relocation for GOT/PLT
+CFLAGS := -m32 -Werror -Wall -fno-pic
 
 slibc.a: $(SLIBC_OBJ)
 	ar r slibc.a $(SLIBC_OBJ)
