@@ -28,28 +28,25 @@ A linker implemented in C.
 - support got/plt and dynamic linking
 
 # Scratch
-
-- TODO: resolve undefined symbols <======
-  - first of all, built a lookup table to map global symbol name to its absolute address <===
-
-
-- DONE: go thru all the relocation entires that need to be resolved. Make sure mentally I can resolve all these entries myself manually.
-  - DONE: sum.xx.o
-  - DONE: lib.o
-  - DONE: printf.o
-    - note that the switch is implemented with a jump table in .rodata section.
-      Every entry of the jump table need to be relocated by .text section.
-      The number of entries of the jump table is calculated by the literal values
-      of all the cases in the switch statement.
+- DONE writing the ELF file for sum!!!!
+  - linker crash after writing a.out
+  - a.out crash after printing 5050  <++++++++++ TODO HERE
 
 - TODO: make slk work for sum.o and slibc
   - combine .text/.data/.tss from all elf readers
     - respect alignment
     - decide a starting address
   - do relocation 
-    - dump all relocation entries <++++++++++++++ TODO HERE
-    - handle .text first <+++++++++++ TODO HERE
+    - dump all relocation entries
+    - handle .text first
   - write out an executable elf file.
+    - understand how I manually write a elf file in `test_elf_writer.c` # TODO HERE
+
+- DONE: printf.o
+  - note that the switch is implemented with a jump table in .rodata section.
+    Every entry of the jump table need to be relocated by .text section.
+    The number of entries of the jump table is calculated by the literal values
+    of all the cases in the switch statement.
 
 - TODO: handle dynamic libraries and pic code (got/plt)
 

@@ -141,7 +141,7 @@ static void lkctx_relocate(struct lkctx* ctx) {
   }
 }
 
-void lkctx_decide_symbol_abs_addr_elf(struct lkctx* ctx, struct elf_reader* rdptr) {
+static void lkctx_decide_symbol_abs_addr_elf(struct lkctx* ctx, struct elf_reader* rdptr) {
 	for (int i = 0; i < rdptr->nsym; ++i) {
 		Elf32_Sym* sym = rdptr->symtab + i;
     int type = ELF32_ST_TYPE(sym->st_info);
@@ -160,7 +160,7 @@ void lkctx_decide_symbol_abs_addr_elf(struct lkctx* ctx, struct elf_reader* rdpt
 	}
 }
 
-void lkctx_decide_symbol_abs_addr(struct lkctx* ctx) {
+static void lkctx_decide_symbol_abs_addr(struct lkctx* ctx) {
   VEC_FOREACH(&ctx->readers, struct elf_reader, rdptr) {
 		lkctx_decide_symbol_abs_addr_elf(ctx, rdptr);
 	}
@@ -195,5 +195,5 @@ static void lkctx_link(struct lkctx* ctx) {
 	// do relocation using the absolute address of section and global symbols
   lkctx_relocate(ctx);
 
-  assert(false && "link ni");
+	elf_writer_write_with_ctx(&ctx->writer, "a.out", ctx);
 }

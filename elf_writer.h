@@ -19,7 +19,7 @@
 struct elf_writer {
   Elf32_Ehdr ehdr;
   struct str textbuf;
-  struct vec phdrtab; // TODO make use of this
+  // struct vec phdrtab; // TODO make use of this. segtab already serves the purpose
 
   struct str shstrtab; // contains section names
   uint16_t shn_text;
@@ -83,7 +83,7 @@ static void elf_writer_init_ehdr(struct elf_writer* writer) {
 static struct elf_writer elf_writer_create() {
   struct elf_writer writer;
   elf_writer_init_ehdr(&writer);
-  writer.phdrtab = vec_create(sizeof(Elf32_Phdr));
+  // writer.phdrtab = vec_create(sizeof(Elf32_Phdr));
   writer.segtab = vec_create(sizeof(struct segment));
   writer.shtab = vec_create(sizeof(Elf32_Shdr));
 
@@ -99,6 +99,7 @@ static struct elf_writer elf_writer_create() {
   return writer;
 }
 
+// TODO deprecate this
 static void elf_writer_set_text_manually(struct elf_writer* writer, struct str* textstr) {
   writer->textbuf = str_move(textstr);
 }
@@ -131,13 +132,19 @@ static int elf_writer_add_section(struct elf_writer* writer, const char* name, u
   return writer->shtab.len - 1;
 }
 
+struct lkctx;
+void elf_writer_write_with_ctx(struct elf_writer* writer, const char* path, struct lkctx* ctx);
+
+// TODO deprecate this
 static void elf_writer_write(struct elf_writer* writer, const char* path) {
   // THIS ALIGNMENT is THE KEY TO make the generated ELF file work!
   writer->next_file_off = make_align(writer->next_file_off, 4096);
   struct segment textseg = segment_create(
     writer->next_file_off,
     writer->next_va,
-    &writer->textbuf);
+    &writer->textbuf,
+    writer->textbuf.len,
+    ".text");
 
   // Having a .text section header is good but not necessary to make the ELF
   // file work.
@@ -200,13 +207,13 @@ static void elf_writer_write(struct elf_writer* writer, const char* path) {
 }
 
 static void elf_writer_free(struct elf_writer* writer) {
-  vec_free(&writer->phdrtab);
+  // vec_free(&writer->phdrtab);
   VEC_FOREACH(&writer->segtab, struct segment, segptr) {
     segment_free(segptr);
   }
   vec_free(&writer->segtab);
   vec_free(&writer->shtab);
-  str_free(&writer->textbuf);
+  // str_free(&writer->textbuf);
 }
 
 // I can image the following APIs that can help creating an executable ELF.

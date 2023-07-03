@@ -80,10 +80,11 @@ runslk_slibc:
 	objcopy $(REMOVE_SECTION) artifact/slibc/lib.o out/lib.o
 	objcopy $(REMOVE_SECTION) artifact/slibc/printf.o out/printf.o
 	@./out/slk out/sum.gas.o out/lib.o out/printf.o
+	@chmod a+x ./a.out
 	@./a.out
 
 slk:
-	gcc -m32 -I. slk.c sar/elf_member.c -o out/slk
+	gcc -m32 -g -I. slk.c sar/elf_member.c elf_writer.c -o out/slk
 
 runld_slibc:
 	make -C slibc
