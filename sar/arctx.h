@@ -1,6 +1,6 @@
 #pragma once
 
-#include "dict.h"
+#include "scom/dict.h"
 #include "sym_group.h"
 #include "elf_member.h"
 #include <sys/stat.h>
@@ -269,6 +269,7 @@ static void arctx_assign_sym_group_to_elf_file(struct arctx* ctx) {
 }
 
 static void arctx_build_symname2memidx(struct arctx* ctx) {
+	#if 0
   ctx->symname2memidx = dict_create(); 
   VEC_FOREACH_I(&ctx->elf_mem_list, struct elf_member, memptr, i) {
     VEC_FOREACH(&memptr->provide_syms, char*, pstr) {
@@ -287,6 +288,9 @@ static void arctx_build_symname2memidx(struct arctx* ctx) {
       dict_put_to_entry(&ctx->symname2memidx, pentry, *pstr, i);
     }
   }
+	#else
+	assert(false && "temporarily disabled");
+	#endif
 }
 
 /*
@@ -390,7 +394,7 @@ static void arctx_resolve_symbols(struct arctx* ctx, struct vec* target_syms, st
     printf(" - %s\n", *itemptr);
   }
 
-  struct dict added_file = dict_create(); // value is not used
+  struct dict added_file = dict_create_str_int(); // value is not used
 
   // resolve symbols in stack order
   while (target_syms->len > 0) {
@@ -400,14 +404,14 @@ static void arctx_resolve_symbols(struct arctx* ctx, struct vec* target_syms, st
       free(sym);
       continue;
     }
-    struct dict_entry* entry = dict_lookup(&ctx->symname2memidx, sym);
+    struct dict_entry* entry = dict_find(&ctx->symname2memidx, (void*) sym);
     if (!entry->key) {
       FAIL("Symbol not found %s\n", sym);
     }
-    int elfmem_idx = entry->val;
+    int elfmem_idx = (int) entry->val;
     struct elf_member* elfmem = vec_get_item(&ctx->elf_mem_list, elfmem_idx);
 
-    if (dict_put(&added_file, elfmem->name, 0) > 0) {
+    if (dict_put(&added_file, (void*) elfmem->name, (void*) 0) > 0) {
       printf("Add file %s\n", elfmem->name);
       // add the needed symbols
       VEC_FOREACH(&elfmem->need_syms, char*, pstr) {
@@ -421,6 +425,7 @@ static void arctx_resolve_symbols(struct arctx* ctx, struct vec* target_syms, st
     free(sym);
   }
 
+	#if 0
   const char* path = "/tmp/dep_obj_list";
   printf("Write %d dependencies to %s\n", added_file.size, path);
   FILE* fp = fopen(path, "w");
@@ -428,6 +433,9 @@ static void arctx_resolve_symbols(struct arctx* ctx, struct vec* target_syms, st
     fprintf(fp, "%s\n", entry_ptr->key);
   }
   fclose(fp);
+	#else
+	assert(0 && "disabled temporarily");
+	#endif
   
   dict_free(&added_file);
 }

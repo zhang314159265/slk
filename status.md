@@ -16,6 +16,7 @@ A linker implemented in C.
 - [Createing a C Library - osdev](https://wiki.osdev.org/Creating_a_C_Library): referred from crt0 wikipedia page. Talks about crt0, crti, crtn, crtbegin, crtend.
 - [ar doc](https://sourceware.org/binutils/docs-2.39/binutils.htm): the doc is very simply and basically only goes thru the command line options.
 - [ar - wikipedia](https://en.wikipedia.org/wiki/Ar_(Unix)): explains the format of an ar file.
+- [Working with submodules](https://github.blog/2016-02-01-working-with-submodules/)
 
 # Low Prio
 - why nm shows no symbols for libc.so but `readelf -s` works
@@ -24,23 +25,25 @@ A linker implemented in C.
 
 # Plan
 - make slk work for sum.o and slibc
-- refactor sas ans slk to avoid duplicate code
+- refactor sas and slk to avoid duplicate code
 - support got/plt and dynamic linking
 
 # Scratch
-- DONE writing the ELF file for sum!!!!
-  - linker crash after writing a.out
-  - a.out crash after printing 5050  <++++++++++ TODO HERE
 
-- TODO: make slk work for sum.o and slibc
-  - combine .text/.data/.tss from all elf readers
-    - respect alignment
-    - decide a starting address
-  - do relocation 
-    - dump all relocation entries
-    - handle .text first
-  - write out an executable elf file.
-    - understand how I manually write a elf file in `test_elf_writer.c` # TODO HERE
+TODO: make it work with scom/dict in slk.
+  - need makr sar work..
+
+## rest
+- TODO: add the dependencies to scom in slk and use the APIs provided by scom
+  - 1. setup the dependencies <====
+  - 2. make header available
+  - 3. make lib available (not needed in the current setting since we only have header files).
+
+- REFACTORING.......
+  - 1. dictionary
+    - TODO: remove dict.h in this directory and replace them with the one in scom.
+
+- check dynamic linking
 
 - DONE: printf.o
   - note that the switch is implemented with a jump table in .rodata section.
@@ -64,8 +67,6 @@ A linker implemented in C.
   - create a example using ctor/dtor to try out crti/crtn/crtbegin/crtend
 
 - TODO: create a example .s/.o that uses libgcc
-
-- check dynamic linking
 
 - check how linker works when calling 'gcc' to build the sum executable.
   - how does ld create the executable based on sum.o and libraries

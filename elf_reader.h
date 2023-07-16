@@ -3,7 +3,7 @@
 #include "util.h"
 #include "elf.h"
 #include "vec.h"
-#include "dict.h"
+#include "scom/dict.h"
 #include <sys/stat.h>
 #include <string.h>
 
@@ -113,7 +113,7 @@ static struct elf_reader elf_reader_create_from_buffer(const char* buf, int size
     }
   }
 
-	reader.section_name_to_abs_addr = dict_create();
+	reader.section_name_to_abs_addr = dict_create_str_int();
   return reader;
 }
 

@@ -42,7 +42,7 @@ void elf_writer_create_segment(struct elf_writer* writer, struct lkctx* ctx, con
 
 void elf_writer_write_with_ctx(struct elf_writer* writer, const char* path, struct lkctx* ctx) {
   // set the entry correctly
-  writer->ehdr.e_entry = dict_lookup_nomiss(&ctx->sym_name_to_abs_addr, "_start");
+  writer->ehdr.e_entry = (uint32_t) dict_find_nomiss(&ctx->sym_name_to_abs_addr, "_start");
   
 	// follow elf_writer_write to write the elf file using the information
 	// in lkctx.

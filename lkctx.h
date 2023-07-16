@@ -1,7 +1,7 @@
 #pragma once
 
 #include "vec.h"
-#include "dict.h"
+#include "scom/dict.h"
 #include "elf_reader.h"
 #include "elf_writer.h"
 
@@ -19,7 +19,7 @@ static struct lkctx lkctx_create() {
   struct lkctx ctx;
   ctx.readers = vec_create(sizeof(struct elf_reader));
   ctx.writer = elf_writer_create();
-	ctx.sym_name_to_abs_addr = dict_create();
+	ctx.sym_name_to_abs_addr = dict_create_str_int();
   return ctx;
 }
 
@@ -43,7 +43,7 @@ static uint32_t lkctx_decide_sections_va(struct lkctx* ctx, uint32_t next_va, co
       printf("Elf %d, section %s virtual address 0x%x size %d, algin %d\n", idx, secname, next_va, shdr->sh_size, shdr->sh_addralign);
 
 			// record the absolution address for the section
-			int status = dict_put(&rdptr->section_name_to_abs_addr, secname, next_va);
+			int status = dict_put(&rdptr->section_name_to_abs_addr, (void*) strdup(secname), (void*) next_va);
 			assert(status == 1);
 
       next_va += shdr->sh_size;
@@ -60,10 +60,10 @@ static void lkctx_relocate_one_entry(struct lkctx* ctx, struct elf_reader* rdptr
 	if (sym_type == STT_SECTION) {
 		Elf32_Shdr* sec = elf_reader_get_sh(rdptr, sym->st_shndx);
 		char* sec_name = rdptr->shstrtab + sec->sh_name;
-		sym_abs_addr = dict_lookup_nomiss(&rdptr->section_name_to_abs_addr, sec_name);
+		sym_abs_addr = (uint32_t) dict_find_nomiss(&rdptr->section_name_to_abs_addr, (void*) sec_name);
 	} else if (sym_type == STT_FUNC || sym_type == STT_NOTYPE || sym_type == STT_OBJECT) {
 		char* sym_name = rdptr->symstr + sym->st_name;
-		sym_abs_addr = dict_lookup_nomiss(&ctx->sym_name_to_abs_addr, sym_name);
+		sym_abs_addr = (uint32_t) dict_find_nomiss(&ctx->sym_name_to_abs_addr, (void*) sym_name);
 	} else {
 		printf("unhandled sym_type %d\n", sym_type);
 		assert(false && "unhandled symbol type");
@@ -78,7 +78,7 @@ static void lkctx_relocate_one_entry(struct lkctx* ctx, struct elf_reader* rdptr
 		// as the base for addition. The discrepancy is resolved by storing
 		// -4 in 'patch_loc'.
 		char* text_sec_name = rdptr->shstrtab + shdr_text->sh_name;
-		uint32_t text_sec_abs_addr = dict_lookup_nomiss(&rdptr->section_name_to_abs_addr, text_sec_name);
+		uint32_t text_sec_abs_addr = (uint32_t) dict_find_nomiss(&rdptr->section_name_to_abs_addr, (void*) text_sec_name);
 		pc_abs_addr = text_sec_abs_addr + r_offset;
 		*patch_loc = *patch_loc + sym_abs_addr - pc_abs_addr;
 	} else {
@@ -150,9 +150,9 @@ static void lkctx_decide_symbol_abs_addr_elf(struct lkctx* ctx, struct elf_reade
 			char* sym_name = rdptr->symstr + sym->st_name;
 			Elf32_Shdr* sym_section = elf_reader_get_sh(rdptr, sym->st_shndx);
 			char* sym_section_name = rdptr->shstrtab + sym_section->sh_name;
-			uint32_t section_abs_addr = dict_lookup_nomiss(&rdptr->section_name_to_abs_addr, sym_section_name);
+			uint32_t section_abs_addr = (uint32_t) dict_find_nomiss(&rdptr->section_name_to_abs_addr, (void*) sym_section_name);
 			uint32_t sym_abs_addr = section_abs_addr + sym->st_value;
-			int status = dict_put(&ctx->sym_name_to_abs_addr, sym_name, sym_abs_addr);
+			int status = dict_put(&ctx->sym_name_to_abs_addr, (void*) strdup(sym_name), (void*) sym_abs_addr);
 			assert(status == 1 && "duplicate definition of symbol found");
 
 			printf("sym_name %s, sym_section_name %s, sym_abs_addr 0x%x\n", sym_name, sym_section_name, sym_abs_addr);
