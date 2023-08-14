@@ -17,6 +17,7 @@ A linker implemented in C.
 - [ar doc](https://sourceware.org/binutils/docs-2.39/binutils.htm): the doc is very simply and basically only goes thru the command line options.
 - [ar - wikipedia](https://en.wikipedia.org/wiki/Ar_(Unix)): explains the format of an ar file.
 - [Working with submodules](https://github.blog/2016-02-01-working-with-submodules/)
+  - need call 'git submodule update --remote' to fetch new commits for submodule from server.
 
 # Low Prio
 - why nm shows no symbols for libc.so but `readelf -s` works
@@ -30,18 +31,8 @@ A linker implemented in C.
 
 # Scratch
 
-TODO: make it work with scom/dict in slk.
-  - need makr sar work..
-
 ## rest
-- TODO: add the dependencies to scom in slk and use the APIs provided by scom
-  - 1. setup the dependencies <====
-  - 2. make header available
-  - 3. make lib available (not needed in the current setting since we only have header files).
-
 - REFACTORING.......
-  - 1. dictionary
-    - TODO: remove dict.h in this directory and replace them with the one in scom.
 
 - check dynamic linking
 
