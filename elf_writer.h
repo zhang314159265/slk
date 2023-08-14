@@ -9,7 +9,7 @@
 #include <assert.h>
 #include "elf.h"
 #include "util.h"
-#include "str.h"
+#include "scom/str.h"
 #include "vec.h"
 #include "segment.h"
 
