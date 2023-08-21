@@ -1,6 +1,6 @@
 #pragma once
 
-#include "vec.h"
+#include "scom/vec.h"
 #include "util.h"
 
 // represent a group of symbols in the ar symbol lookup table that have the

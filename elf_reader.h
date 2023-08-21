@@ -2,7 +2,7 @@
 
 #include "util.h"
 #include "elf.h"
-#include "vec.h"
+#include "scom/vec.h"
 #include "scom/dict.h"
 #include <sys/stat.h>
 #include <string.h>

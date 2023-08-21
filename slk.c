@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include "lkctx.h"
 #include "elf_reader.h"
-#include "vec.h"
+#include "scom/vec.h"
 #include "util.h"
 #include "check.h"
 #include "sar/arctx.h"

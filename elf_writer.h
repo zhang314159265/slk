@@ -10,7 +10,7 @@
 #include "elf.h"
 #include "util.h"
 #include "scom/str.h"
-#include "vec.h"
+#include "scom/vec.h"
 #include "segment.h"
 
 #define ENTRY 0x50000000

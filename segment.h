@@ -1,6 +1,6 @@
 #pragma once
 
-#include "vec.h"
+#include "scom/vec.h"
 #include "elf.h"
 
 struct segment {

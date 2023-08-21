@@ -1,6 +1,6 @@
 #pragma once
 
-#include "vec.h"
+#include "scom/vec.h"
 #include "scom/dict.h"
 #include "elf_reader.h"
 #include "elf_writer.h"

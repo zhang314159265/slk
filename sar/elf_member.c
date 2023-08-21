@@ -58,7 +58,7 @@ void elfmem_verify(struct elf_member* elfmem, struct arctx* ctx) {
     names_in_index = ((struct sym_group*) vec_get_item(&ctx->sglist, elfmem->sgidx))->names;
   } else {
     printf("\033[33mNo symbol found in the index file for %s\033[0m\n", elfmem->name);
-    names_in_index = vec_create_nomalloc(sizeof(char*));
+    names_in_index = vec_create(sizeof(char*));
   }
 
   // verify that the symbols in the sym_group matches the
