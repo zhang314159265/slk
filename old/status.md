@@ -32,10 +32,12 @@ A linker implemented in C.
 # Scratch
 
 ## rest
+- TODO: move all stuff in slk to old/. And increnemtnally cleanup stuff in old/ to refactor the project.
+
 - REFACTORING.......
   - util.h <==
   - elf.h <== TODO HERE
-  - `elf_reader`, `elf_writer`
+  - `elf_reader`, `elf_writer` <== TODO HERE
   - clean up the dependencies on sar....
 
 - check dynamic linking

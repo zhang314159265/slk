@@ -2,6 +2,6 @@
 a.out
 
 slibc/out/
-slibc/slibc.a
+slibc.a
 
 out/
