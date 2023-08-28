@@ -58,7 +58,7 @@ static char* lenstrdup(const char* src, int len) {
   return dst;
 }
 
-#include "check.h"
+#include "scom/check.h"
 
 static int lenstrtoi(const char* s, int len) {
   const char* scpy = lenstrdup(s, len);

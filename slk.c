@@ -3,7 +3,7 @@
 #include "elf_reader.h"
 #include "scom/vec.h"
 #include "util.h"
-#include "check.h"
+#include "scom/check.h"
 #include "sar/arctx.h"
 
 int main(int argc, char **argv) {

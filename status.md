@@ -33,8 +33,9 @@ A linker implemented in C.
 
 ## rest
 - REFACTORING.......
-  - vec.h <== TODO HERE
-  - elf.h, `elf_reader`, `elf_writer`
+  - util.h <==
+  - elf.h <== TODO HERE
+  - `elf_reader`, `elf_writer`
   - clean up the dependencies on sar....
 
 - check dynamic linking
