@@ -4,6 +4,7 @@
 #include "sym_group.h"
 #include "elf_member.h"
 #include <sys/stat.h>
+#include <ctype.h>
 
 #define SIGNATURE "!<arch>\n"
 #define SIGNATURE_LEN 8

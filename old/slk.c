@@ -2,7 +2,7 @@
 #include "lkctx.h"
 #include "elf_reader.h"
 #include "scom/vec.h"
-#include "util.h"
+#include "scom/util.h"
 #include "scom/check.h"
 #include "sar/arctx.h"
 

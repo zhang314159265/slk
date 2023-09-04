@@ -1,6 +1,6 @@
 #pragma once
 
-#include "util.h"
+#include "scom/util.h"
 #include "elf.h"
 #include "scom/vec.h"
 #include "scom/dict.h"

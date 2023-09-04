@@ -8,7 +8,7 @@
 
 #include <assert.h>
 #include "elf.h"
-#include "util.h"
+#include "scom/util.h"
 #include "scom/str.h"
 #include "scom/vec.h"
 #include "segment.h"

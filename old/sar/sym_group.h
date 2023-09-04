@@ -1,7 +1,7 @@
 #pragma once
 
 #include "scom/vec.h"
-#include "util.h"
+#include "scom/util.h"
 
 // represent a group of symbols in the ar symbol lookup table that have the
 // same header offset.
