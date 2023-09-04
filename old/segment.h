@@ -1,7 +1,7 @@
 #pragma once
 
 #include "scom/vec.h"
-#include "elf.h"
+#include "scom/elf.h"
 
 struct segment {
   Elf32_Phdr phdr;

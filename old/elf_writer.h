@@ -7,7 +7,7 @@
 #pragma once
 
 #include <assert.h>
-#include "elf.h"
+#include "scom/elf.h"
 #include "scom/util.h"
 #include "scom/str.h"
 #include "scom/vec.h"

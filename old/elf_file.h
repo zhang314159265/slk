@@ -4,7 +4,7 @@
  */
 #pragma once
 
-#include "elf.h"
+#include "scom/elf.h"
 #include "util.h"
 #include "vec.h"
 #include "str.h"
