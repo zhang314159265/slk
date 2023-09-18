@@ -31,24 +31,37 @@ A linker implemented in C.
 
 # Scratch
 
+## Next
+```
+clean up slk repo # +++++++++
+- old/lkctx.h
+```
+
 ## rest
-- NEXT STEP:
-  - NEXT: handle `elf_reader_list_sht` which fail the tests under slk
-  - make the test under scom/ pass
-	  ` make -C test/ test_elf_reader`
-	- make the slk run under slk/ work
-	  ` make -C old/ `
-  - note: call reader api `elfr_xxx`, writer api `elfw_xxx`
+- TODO: move `elf_writer.h` to `scom/elf_writer.h`
+  - run `make -C old/` under slk folder
+	  - it can print 5050 now. Cleanup the code in old/ before push the commit. +++++++++++++++++++ (the commit in scom/ for `elf_writer` has already been pushed)
+
+	- TODO: think about not creating old/segment.h since segment datastructure is very simple
 
 - TODO: move all stuff in slk to old/. And increnemtnally cleanup stuff in old/ to refactor the project.
 
 - NOTE: critical to clean up `elf_file, elf_reader, elf_writer` under old/
 
 - REFACTORING.......
-  - `elf_reader` <== TODO HERE <++++++
-	- `elf_writer` <== TODO HERE
+	- `elf_writer` <= replaced by slk but some test still use the old version. Fully drop the old code for `elf_writer` after cleaning up the tests.
   - clean up the dependencies on sar....
   - `elf_file` <=== not used by slk
+	```
+	  comment in elf_writer.h that's relevant to elf_file
+/*
+ * TODO consolidate with elf_file.h. The following things need to be resolved
+ * 1. elf_file.h rely on arctx
+ * 2. elf_file.h only handles relocable file.
+ *    while this file only handles executable file
+ */
+ ```
+
 
 - check dynamic linking
 
@@ -79,3 +92,5 @@ A linker implemented in C.
   - how does ld create the executable based on sum.o and libraries
 
 ` [https://blogs.oracle.com/linux/post/hello-from-a-libc-free-world-part-1] `, referred from crt0 wikipedia page. Looks reasonable.
+
+- check branch WIP-manually-flatten-static-lib under slk
