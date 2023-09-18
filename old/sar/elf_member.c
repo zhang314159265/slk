@@ -1,15 +1,15 @@
 #include "elf_member.h"
 #include "arctx.h"
-#include "elf_reader.h"
+#include "scom/elf_reader.h"
 
 // parse the elf file and process the symbol lists
 static void elfmem_parse_elf(struct arctx* ctx, struct elf_member* elfmem) {
   char* elfbuf = ctx->buf + elfmem->off;
   int elfsiz = elfmem->size;
-  struct elf_reader reader = elf_reader_create_from_buffer(elfbuf, elfsiz);
+  struct elf_reader reader = elfr_create_from_buffer(elfbuf, elfsiz);
 
-  elfmem->provide_syms = elf_reader_get_global_defined_syms(&reader);
-  elfmem->need_syms = elf_reader_get_undefined_syms(&reader);
+  elfmem->provide_syms = elfr_get_global_defined_syms(&reader);
+  elfmem->need_syms = elfr_get_undefined_syms(&reader);
 
   #if 0
   elf_reader_list_syms(&reader);

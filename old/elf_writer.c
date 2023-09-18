@@ -12,7 +12,7 @@ void elf_writer_create_segment(struct elf_writer* writer, struct lkctx* ctx, con
   int seglen = 0;
   bool isbss = (strcmp(secname, ".bss") == 0);
   VEC_FOREACH(&ctx->readers, struct elf_reader, rdptr) {
-    Elf32_Shdr *shdr = elf_reader_get_sh_by_name(rdptr, secname);
+    Elf32_Shdr *shdr = elfr_get_shdr_by_name(rdptr, secname);
     if (!shdr) {
       continue;
     }

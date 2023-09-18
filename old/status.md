@@ -32,12 +32,23 @@ A linker implemented in C.
 # Scratch
 
 ## rest
+- NEXT STEP:
+  - NEXT: handle `elf_reader_list_sht` which fail the tests under slk
+  - make the test under scom/ pass
+	  ` make -C test/ test_elf_reader`
+	- make the slk run under slk/ work
+	  ` make -C old/ `
+  - note: call reader api `elfr_xxx`, writer api `elfw_xxx`
+
 - TODO: move all stuff in slk to old/. And increnemtnally cleanup stuff in old/ to refactor the project.
 
+- NOTE: critical to clean up `elf_file, elf_reader, elf_writer` under old/
+
 - REFACTORING.......
-  - elf.h <== TODO HERE
-  - `elf_reader`, `elf_writer` <== TODO HERE
+  - `elf_reader` <== TODO HERE <++++++
+	- `elf_writer` <== TODO HERE
   - clean up the dependencies on sar....
+  - `elf_file` <=== not used by slk
 
 - check dynamic linking
 

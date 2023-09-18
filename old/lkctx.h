@@ -2,7 +2,7 @@
 
 #include "scom/vec.h"
 #include "scom/dict.h"
-#include "elf_reader.h"
+#include "scom/elf_reader.h"
 #include "elf_writer.h"
 
 struct lkctx {
@@ -37,7 +37,7 @@ static uint32_t lkctx_decide_sections_va(struct lkctx* ctx, uint32_t next_va, co
   next_va = make_align(next_va, 4096);
   int idx = 0;
   VEC_FOREACH(&ctx->readers, struct elf_reader, rdptr) {
-    Elf32_Shdr* shdr = elf_reader_get_sh_by_name(rdptr, secname);
+    Elf32_Shdr* shdr = elfr_get_shdr_by_name(rdptr, secname);
     if (shdr) {
       next_va = make_align(next_va, shdr->sh_addralign);
       printf("Elf %d, section %s virtual address 0x%x size %d, algin %d\n", idx, secname, next_va, shdr->sh_size, shdr->sh_addralign);
@@ -58,7 +58,7 @@ static void lkctx_relocate_one_entry(struct lkctx* ctx, struct elf_reader* rdptr
 	uint32_t pc_abs_addr; // for relative relocation
 	int sym_type = ELF32_ST_TYPE(sym->st_info);
 	if (sym_type == STT_SECTION) {
-		Elf32_Shdr* sec = elf_reader_get_sh(rdptr, sym->st_shndx);
+		Elf32_Shdr* sec = elfr_get_shdr(rdptr, sym->st_shndx);
 		char* sec_name = rdptr->shstrtab + sec->sh_name;
 		sym_abs_addr = (uint32_t) dict_find_nomiss(&rdptr->section_name_to_abs_addr, (void*) sec_name);
 	} else if (sym_type == STT_FUNC || sym_type == STT_NOTYPE || sym_type == STT_OBJECT) {
@@ -95,9 +95,9 @@ static void lkctx_relocate_section(struct lkctx* ctx, struct elf_reader* rdptr, 
 	printf("Handle relocation section with name %s\n", name);
 	assert(shdr_rel->sh_entsize == sizeof(Elf32_Rel));
 	assert(shdr_rel->sh_size >= 0 && shdr_rel->sh_size % sizeof(Elf32_Rel) == 0);
-	Elf32_Shdr* shdr_symtab = elf_reader_get_sh(rdptr, shdr_rel->sh_link);
+	Elf32_Shdr* shdr_symtab = elfr_get_shdr(rdptr, shdr_rel->sh_link);
 	// call it text but it may be a data section as well
-	Elf32_Shdr* shdr_text = elf_reader_get_sh(rdptr, shdr_rel->sh_info);
+	Elf32_Shdr* shdr_text = elfr_get_shdr(rdptr, shdr_rel->sh_info);
 
 	Elf32_Rel* entries = (Elf32_Rel*) (rdptr->buf + shdr_rel->sh_offset);
 	int nent = shdr_rel->sh_size / sizeof(Elf32_Rel);
@@ -114,7 +114,7 @@ static void lkctx_relocate_section(struct lkctx* ctx, struct elf_reader* rdptr, 
 		assert(sym_idx >= 0 && sym_idx < nsym);
 		Elf32_Sym* cur_sym = syms + sym_idx;
 		printf("- r_offset 0x%x, sym_idx %d, rel_type %d\n", r_offset, sym_idx, rel_type);
-		elf_reader_dump_symbol(rdptr, cur_sym);
+		elfr_dump_symbol(rdptr, cur_sym);
 		lkctx_relocate_one_entry(ctx, rdptr, cur_sym, rel_type, r_offset, shdr_text);
 	}
 }
@@ -123,8 +123,8 @@ static void lkctx_relocate_section(struct lkctx* ctx, struct elf_reader* rdptr, 
  * Relocate an elf file.
  */
 static void lkctx_relocate_elf(struct lkctx* ctx, struct elf_reader* rdptr) {
-	for (int i = 0; i < rdptr->nsection; ++i) {
-    Elf32_Shdr* shdr = elf_reader_get_sh(rdptr, i);
+	for (int i = 0; i < rdptr->shtab_size; ++i) {
+    Elf32_Shdr* shdr = elfr_get_shdr(rdptr, i);
 
 		// don't support SHT_RELA yet.
 		if (shdr->sh_type == SHT_REL) {
@@ -135,20 +135,20 @@ static void lkctx_relocate_elf(struct lkctx* ctx, struct elf_reader* rdptr) {
 
 static void lkctx_relocate(struct lkctx* ctx) {
   VEC_FOREACH(&ctx->readers, struct elf_reader, rdptr) {
-    elf_reader_list_sht(rdptr);
+    elfr_dump_shtab(rdptr);
 
 		lkctx_relocate_elf(ctx, rdptr);
   }
 }
 
 static void lkctx_decide_symbol_abs_addr_elf(struct lkctx* ctx, struct elf_reader* rdptr) {
-	for (int i = 0; i < rdptr->nsym; ++i) {
+	for (int i = 0; i < rdptr->symtab_size; ++i) {
 		Elf32_Sym* sym = rdptr->symtab + i;
     int type = ELF32_ST_TYPE(sym->st_info);
     int bind = ELF32_ST_BIND(sym->st_info);
 		if (bind == STB_GLOBAL && sym->st_shndx != SHN_UNDEF) {
 			char* sym_name = rdptr->symstr + sym->st_name;
-			Elf32_Shdr* sym_section = elf_reader_get_sh(rdptr, sym->st_shndx);
+			Elf32_Shdr* sym_section = elfr_get_shdr(rdptr, sym->st_shndx);
 			char* sym_section_name = rdptr->shstrtab + sym_section->sh_name;
 			uint32_t section_abs_addr = (uint32_t) dict_find_nomiss(&rdptr->section_name_to_abs_addr, (void*) sym_section_name);
 			uint32_t sym_abs_addr = section_abs_addr + sym->st_value;
@@ -179,8 +179,8 @@ static void lkctx_link(struct lkctx* ctx) {
   int idx = 0;
   VEC_FOREACH(&ctx->readers, struct elf_reader, rdptr) {
     printf("Elf %d\n", idx++);
-    elf_reader_list_sht(rdptr);
-    elf_reader_list_syms(rdptr);
+    elfr_dump_shtab(rdptr);
+    elfr_dump_symtab(rdptr);
   }
 
   uint32_t next_va = ENTRY;
