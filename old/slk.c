@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "lkctx.h"
+#include "../lkctx.h"
 #include "scom/elf_reader.h"
 #include "scom/vec.h"
 #include "scom/util.h"

@@ -31,18 +31,14 @@ A linker implemented in C.
 
 # Scratch
 
-## Next
-```
-clean up slk repo # +++++++++
-- old/lkctx.h
-```
-
 ## rest
-- TODO: move `elf_writer.h` to `scom/elf_writer.h`
-  - run `make -C old/` under slk folder
-	  - it can print 5050 now. Cleanup the code in old/ before push the commit. +++++++++++++++++++ (the commit in scom/ for `elf_writer` has already been pushed)
 
-	- TODO: think about not creating old/segment.h since segment datastructure is very simple
+- NEXT: cleanup lkctx.h and slk.c
+  - cleanup lkctx.h (not in scom but in slk repo) ++++++++++++++
+    - TODO: next step is `lkctx_write_elf` +++++++++++
+	- cleanup slk.c ++++++++++
+
+- TODO (maybe defer): cleanup sar to rely on scom and remove duplicated code.
 
 - TODO: move all stuff in slk to old/. And increnemtnally cleanup stuff in old/ to refactor the project.
 

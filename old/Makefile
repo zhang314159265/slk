@@ -85,7 +85,7 @@ runslk_slibc:
 
 slk:
 	mkdir -p out
-	gcc -m32 -g -I. -I../third_party/scom/include slk.c sar/elf_member.c elf_writer.c -o out/slk
+	gcc -m32 -g -I. -I../third_party/scom/include slk.c sar/elf_member.c -o out/slk
 
 runld_slibc:
 	make -C slibc
