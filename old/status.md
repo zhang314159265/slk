@@ -33,10 +33,15 @@ A linker implemented in C.
 
 ## rest
 
-- NEXT: cleanup lkctx.h and slk.c
-  - cleanup lkctx.h (not in scom but in slk repo) ++++++++++++++
-    - TODO: next step is `lkctx_write_elf` +++++++++++
-	- cleanup slk.c ++++++++++
+- Next step: make 'make test' on top level pass.
+
+- TODO: cleanup snm first.
+  - make sure we have some test to cover the corretness. The test should be ran with 'make test' is executed at the top level.
+
+- TODO: cleanup SAR since it's used by lkctx.c
+
+- NEXT: cleanup slk.c and move some part of Makefile from old to top level directory ++++++++++
+  - add some unit test for sum.
 
 - TODO (maybe defer): cleanup sar to rely on scom and remove duplicated code.
 
