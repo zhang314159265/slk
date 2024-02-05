@@ -5,10 +5,10 @@
 #include <ctype.h>
 #include <stdint.h>
 #include "sym_group.h"
-#include "util.h"
-#include "vec.h"
+#include "scom/util.h"
+#include "scom/vec.h"
 #include "elf_member.h"
-#include "elf_reader.h"
+#include "scom/elf_reader.h"
 #include "arctx.h"
 
 int main(int argc, char **argv) {
@@ -19,14 +19,14 @@ int main(int argc, char **argv) {
   int argidx = 1;
   const char* ar_path = argv[argidx++];
 
-  struct vec target_syms = vec_create_nomalloc(sizeof(char*));
+  struct vec target_syms = vec_create(sizeof(char*));
   if (argidx + 1 < argc && strcmp(argv[argidx], "-s") == 0) {
     target_syms = vec_create_from_csv(argv[argidx + 1]);
     argidx += 2;
   }
 
   // -d represent a list of predefined symbols
-  struct vec predefined_syms = vec_create_nomalloc(sizeof(char*));
+  struct vec predefined_syms = vec_create(sizeof(char*));
   if (argidx + 1 < argc && strcmp(argv[argidx], "-d") == 0) {
     predefined_syms = vec_create_from_csv(argv[argidx + 1]);
     argidx += 2;
@@ -64,8 +64,8 @@ int main(int argc, char **argv) {
     arctx_extract_member(&ctx, mem_name);
   }
   arctx_free(&ctx);
-  vec_free_str(&target_syms);
-  vec_free_str(&predefined_syms);
+  vec_free(&target_syms);
+  vec_free(&predefined_syms);
   printf("bye\n");
   return 0;
 }

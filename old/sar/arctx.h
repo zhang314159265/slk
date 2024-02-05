@@ -198,7 +198,10 @@ static void arctx_free(struct arctx* ctx) {
     sym_group_free(sg);
   }
   vec_free(&ctx->sglist);
+	#if 0
+	// TODO: this cause crash right now
   dict_free(&ctx->symname2memidx);
+	#endif
 }
 
 // return nULL if not found
@@ -270,23 +273,23 @@ static void arctx_assign_sym_group_to_elf_file(struct arctx* ctx) {
 }
 
 static void arctx_build_symname2memidx(struct arctx* ctx) {
-	#if 0
-  ctx->symname2memidx = dict_create(); 
+	#if 1
+  ctx->symname2memidx = dict_create_str_int(); 
   VEC_FOREACH_I(&ctx->elf_mem_list, struct elf_member, memptr, i) {
     VEC_FOREACH(&memptr->provide_syms, char*, pstr) {
       // add the mapping between *pstr and i to symname2memidx
-      struct dict_entry* pentry = dict_lookup(&ctx->symname2memidx, *pstr);
-      if (pentry->key) {
-        struct elf_member* prevmemptr = vec_get_item(&ctx->elf_mem_list, pentry->val);
+      struct dict_entry* pentry = dict_find(&ctx->symname2memidx, *pstr);
+      if (pentry) {
+        struct elf_member* prevmemptr = vec_get_item(&ctx->elf_mem_list, (int) pentry->val);
         // the previous definition wins. Should that be fine?
         //
         // Too many entrys like __x86.get_pc_thunk.ax, ignore them.
         if (!startswith(pentry->key, "__x86.get_pc_thunk")) {
-          printf("\033[33mSymbol %s redefined, %s > %s\033[0m\n", pentry->key, prevmemptr->name, memptr->name);
+          printf("\033[33mSymbol %s redefined, %s > %s\033[0m\n", (char*) pentry->key, prevmemptr->name, memptr->name);
         }
-        continue;
-      }
-      dict_put_to_entry(&ctx->symname2memidx, pentry, *pstr, i);
+      } else {
+      	dict_put(&ctx->symname2memidx, (void*) *pstr, (void*) i);
+		  }
     }
   }
 	#else
@@ -396,6 +399,7 @@ static void arctx_resolve_symbols(struct arctx* ctx, struct vec* target_syms, st
   }
 
   struct dict added_file = dict_create_str_int(); // value is not used
+	added_file.should_free_key = false; // TODO
 
   // resolve symbols in stack order
   while (target_syms->len > 0) {
@@ -435,7 +439,7 @@ static void arctx_resolve_symbols(struct arctx* ctx, struct vec* target_syms, st
   }
   fclose(fp);
 	#else
-	assert(0 && "disabled temporarily");
+	// assert(0 && "disabled temporarily");
 	#endif
   
   dict_free(&added_file);

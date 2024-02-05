@@ -33,12 +33,8 @@ A linker implemented in C.
 
 ## rest
 
-- Next step: make 'make test' on top level pass.
-
-- TODO: cleanup snm first.
-  - make sure we have some test to cover the corretness. The test should be ran with 'make test' is executed at the top level.
-
-- TODO: cleanup SAR since it's used by lkctx.c
+- TODO: cleanup SAR since it's used by lkctx.c 
+  - `make -C old/sar` pass now
 
 - NEXT: cleanup slk.c and move some part of Makefile from old to top level directory ++++++++++
   - add some unit test for sum.
