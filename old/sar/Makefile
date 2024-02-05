@@ -3,7 +3,7 @@ CFLAGS := -Werror
 all: libc
 
 build_sar:
-	gcc sar.c elf_member.c -I.. -I../../third_party/scom/include -g $(CFLAGS) -m32
+	gcc sar.c -I.. -I../../third_party/scom/include -g $(CFLAGS) -m32
 
 libc: build_sar
 	# libgcc needs writev,syscall,__errno_location,sigemptyset,sigfillset,sigdelset,__fprintf_chk

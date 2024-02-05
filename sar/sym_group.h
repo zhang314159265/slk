@@ -7,13 +7,14 @@
 // same header offset.
 struct sym_group {
   int header_off;
-  struct vec names; // does not own the memory for each name
+  struct vec names;
 };
 
 static struct sym_group sym_group_create(int header_off) {
   struct sym_group sg;
   sg.header_off = header_off;
   sg.names = vec_create(sizeof(char*));
+	sg.names.should_free_each_item = true;
   return sg;
 }
 
@@ -38,5 +39,6 @@ static void sglist_add_entry(struct vec* sglist, int header_off, const char* sna
   }
   assert(sg);
   assert(sg->header_off == header_off);
-  vec_append(&sg->names, &sname);
+	const char* sname_copy = strdup(sname);
+  vec_append(&sg->names, &sname_copy);
 }

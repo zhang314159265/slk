@@ -22,8 +22,6 @@ A linker implemented in C.
 # Low Prio
 - why nm shows no symbols for libc.so but `readelf -s` works
 
-# Quest
-
 # Plan
 - make slk work for sum.o and slibc
 - refactor sas and slk to avoid duplicate code
@@ -31,10 +29,9 @@ A linker implemented in C.
 
 # Scratch
 
-## rest
-
 - TODO: cleanup SAR since it's used by lkctx.c 
-  - `make -C old/sar` pass now
+  - move code in old/sar out of old/ +++++++++
+    - `make -C sar` works now using old arctx.h and `elf_member.h`. Replace/rewrite these dependencies ++++++++++++
 
 - NEXT: cleanup slk.c and move some part of Makefile from old to top level directory ++++++++++
   - add some unit test for sum.

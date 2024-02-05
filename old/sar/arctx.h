@@ -2,7 +2,7 @@
 
 #include "scom/dict.h"
 #include "sym_group.h"
-#include "elf_member.h"
+#include "../../../sar/elf_member.h"
 #include <sys/stat.h>
 #include <ctype.h>
 
@@ -174,6 +174,7 @@ static char* arctx_resolve_member_name(struct arctx* ctx, char *file_identifier)
   return name;
 }
 
+#if 1
 static void arctx_dump(struct arctx* ctx) {
   printf("== BEGIN DUMP ar METADATA ==\n");
   printf("The ar file cotnains %d elf members\n", ctx->elf_mem_list.len);
@@ -182,6 +183,7 @@ static void arctx_dump(struct arctx* ctx) {
   }
   printf("== END DUMP ar METADATA ==\n");
 }
+#endif
 
 static void arctx_free(struct arctx* ctx) {
   fclose(ctx->fp);
@@ -236,7 +238,7 @@ static void arctx_extract_member(struct arctx* ctx, const char* mem_name) {
 static void arctx_verify_member_by_name(struct arctx* ctx, const char* mem_name) {
   printf("Verify member %s\n", mem_name);
   struct elf_member* elfmem = arctx_get_elfmem_by_name(ctx, mem_name);
-  elfmem_verify(elfmem, ctx);
+  elfmem_verify(elfmem, ctx->sglist);
 }
 
 static void arctx_verify_all_members(struct arctx* ctx) {
@@ -246,7 +248,7 @@ static void arctx_verify_all_members(struct arctx* ctx) {
     #if 0
     printf("Verifying %d/%d member...\n", idx++, tot);
     #endif
-    elfmem_verify(elfmem, ctx);
+    elfmem_verify(elfmem, ctx->sglist);
   }
   printf("Pass verifying all members in the .a file\n");
 }
@@ -340,7 +342,7 @@ static void arctx_parse(struct arctx* ctx) {
     int is_elf = is_elf_member(ctx, payload_off, memsize);
     char *name = arctx_resolve_member_name(ctx, hdr->file_identifier);
     if (name && is_elf) {
-      struct elf_member elfmem = elfmem_create(ctx, name, payload_off, memsize);
+      struct elf_member elfmem = elfmem_create(ctx->buf, name, payload_off, memsize);
       vec_append(&ctx->elf_mem_list, &elfmem);
       continue;
     }

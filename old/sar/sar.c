@@ -11,6 +11,14 @@
 #include "scom/elf_reader.h"
 #include "arctx.h"
 
+#if 1
+
+#include "elf_member.h"
+#include "arctx.h"
+#include "scom/elf_reader.h"
+
+#endif
+
 int main(int argc, char **argv) {
   if (argc < 2) {
     printf("Usage: sar <path> [-v] [<member file>]\n");
