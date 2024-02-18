@@ -29,6 +29,9 @@ A linker implemented in C.
 
 # Scratch
 
+- TODO: next step, move other functions from old/sar/arctx.h out of the old/ folder
+  - `arctx_parse` +++++++++
+
 - TODO: cleanup SAR since it's used by lkctx.c 
   - move code in old/sar out of old/ +++++++++
     - `make -C sar` works now using old arctx.h and `elf_member.h`. Replace/rewrite these dependencies ++++++++++++
