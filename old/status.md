@@ -28,9 +28,12 @@ A linker implemented in C.
 - support got/plt and dynamic linking
 
 # Scratch
+- clean up old/sar/Makefile
 
-- TODO: next step, move other functions from old/sar/arctx.h out of the old/ folder
-  - `arctx_parse` +++++++++
+- TODO: next step, move other files from old/sar/ out of the old/ folder
+  - almost there!
+  - run make under old/sar and 'make sar' work similarly
+  - after this, go back to handle old/slk.c
 
 - TODO: cleanup SAR since it's used by lkctx.c 
   - move code in old/sar out of old/ +++++++++
