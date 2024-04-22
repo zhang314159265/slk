@@ -28,21 +28,16 @@ A linker implemented in C.
 - support got/plt and dynamic linking
 
 # Scratch
-- clean up old/sar/Makefile
 
-- TODO: next step, move other files from old/sar/ out of the old/ folder
-  - almost there!
-  - run make under old/sar and 'make sar' work similarly
-  - after this, go back to handle old/slk.c
+- go back to handle old/slk.c <+++++
 
-- TODO: cleanup SAR since it's used by lkctx.c 
-  - move code in old/sar out of old/ +++++++++
-    - `make -C sar` works now using old arctx.h and `elf_member.h`. Replace/rewrite these dependencies ++++++++++++
+- TODO: test slk with an archive file rather than all .o file
+
+- cleanup `runslk_slibc` in old/Makefile 
+  - cleanup slibc/
 
 - NEXT: cleanup slk.c and move some part of Makefile from old to top level directory ++++++++++
   - add some unit test for sum.
-
-- TODO (maybe defer): cleanup sar to rely on scom and remove duplicated code.
 
 - TODO: move all stuff in slk to old/. And increnemtnally cleanup stuff in old/ to refactor the project.
 

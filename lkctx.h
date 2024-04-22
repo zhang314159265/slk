@@ -24,7 +24,9 @@ static struct lkctx lkctx_create() {
 }
 
 static void lkctx_free(struct lkctx* ctx) {
-	// TODO: we should free each individual readers
+  VEC_FOREACH(&ctx->readers, struct elf_reader, rdptr) {
+    elfr_free(rdptr);
+  }
   vec_free(&ctx->readers);
   elfw_free(&ctx->writer);
 	dict_free(&ctx->sym_name_to_abs_va);

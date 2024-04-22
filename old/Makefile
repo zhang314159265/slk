@@ -74,7 +74,7 @@ REMOVE_SECTION := -R .comment -R .note.GNU-stack -R .rel.eh_frame -R .eh_frame -
 
 runslk_slibc:
 	make -C slibc
-	make slk
+	make -C .. slk
 	@rm -f ./a.out
 	objcopy $(REMOVE_SECTION) artifact/sum.gas.o out/sum.gas.o
 	objcopy $(REMOVE_SECTION) artifact/slibc/lib.o out/lib.o
@@ -82,10 +82,6 @@ runslk_slibc:
 	@./out/slk out/lib.o out/printf.o out/sum.gas.o
 	@chmod a+x ./a.out
 	@./a.out
-
-slk:
-	mkdir -p out
-	gcc -m32 -g -I. -I../third_party/scom/include slk.c sar/elf_member.c -o out/slk
 
 runld_slibc:
 	make -C slibc

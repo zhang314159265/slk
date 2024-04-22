@@ -1,3 +1,7 @@
+slk:
+	mkdir -p out
+	gcc -m32 -g -Werror -I. -Ithird_party/scom/include slk.c -o out/slk
+
 test:
 	@make -C snm test
 	@make -C sar test
