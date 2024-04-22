@@ -1,3 +1,6 @@
 [submodule "third_party/scom"]
 	path = third_party/scom
 	url = https://github.com/zhang314159265/scom
+[submodule "third_party/slibc"]
+	path = third_party/slibc
+	url = https://github.com/zhang314159265/slibc.git

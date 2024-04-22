@@ -29,12 +29,11 @@ A linker implemented in C.
 
 # Scratch
 
-- go back to handle old/slk.c <+++++
+- cleanup `runslk_slibc` in old/Makefile 
+
+- get rid of `runld_slibc` since this should be in slibc repo.
 
 - TODO: test slk with an archive file rather than all .o file
-
-- cleanup `runslk_slibc` in old/Makefile 
-  - cleanup slibc/
 
 - NEXT: cleanup slk.c and move some part of Makefile from old to top level directory ++++++++++
   - add some unit test for sum.
