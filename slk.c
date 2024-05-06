@@ -10,7 +10,7 @@
 
 int main(int argc, char **argv) {
 	struct lkctx ctx = lkctx_create();
-	for (int i = 0; i < argc; ++i) {
+	for (int i = 1; i < argc; ++i) {
 		const char *path = argv[i];
 		printf("Handle path %s\n", path);
 		if (endswith(path, ".o")) {

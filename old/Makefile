@@ -79,7 +79,7 @@ runslk_slibc:
 	objcopy $(REMOVE_SECTION) artifact/sum.gas.o out/sum.gas.o
 	objcopy $(REMOVE_SECTION) artifact/slibc/lib.o out/lib.o
 	objcopy $(REMOVE_SECTION) artifact/slibc/printf.o out/printf.o
-	@./out/slk out/lib.o out/printf.o out/sum.gas.o
+	@../out/slk out/lib.o out/printf.o out/sum.gas.o
 	@chmod a+x ./a.out
 	@./a.out
 

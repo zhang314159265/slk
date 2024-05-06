@@ -9,10 +9,16 @@
 
 #include "sym_group.h"
 
-#ifdef dprintf
-#undef dprintf
+#ifdef DEBUG
+#undef DEBUG
 #endif
-#define dprintf(...) // fprintf(stderr, __VA_ARGS__)
+
+#define DEBUG 0
+#if DEBUG
+#define dprintf(...) fprintf(stderr, __VA_ARGS__)
+#else
+#define dprintf(...)
+#endif
 
 struct elf_member {
   const char* name; // the name is like xxx.o

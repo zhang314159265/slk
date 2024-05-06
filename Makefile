@@ -1,3 +1,5 @@
+first: runslk_slibc
+
 slk:
 	mkdir -p out
 	gcc -m32 -g -Werror -I. -Ithird_party/scom/include slk.c -o out/slk
@@ -7,5 +9,13 @@ test:
 	@make -C sar test
 
 # setup sum for testing
+# Add -fno-pic to avoid generating GOT/PLT related stuff.
 setup_sum:
-	gcc tests/sum.c -m32 -c -o out/sum.gas.o
+	gcc tests/sum.c -m32 -c -fno-pic -o out/sum.gas.o
+
+runslk_slibc: slk setup_sum
+	make -C third_party/slibc
+	out/slk third_party/slibc/out/*.o out/sum.gas.o
+	chmod a+x a.out
+	./a.out | grep 5050
+	@echo Pass

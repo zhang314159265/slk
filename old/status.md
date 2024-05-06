@@ -29,7 +29,9 @@ A linker implemented in C.
 
 # Scratch
 
-- cleanup `runslk_slibc` in old/Makefile 
+- TODO: let `runslk_slibc` in slk/Makefile work with both standalone .o files and a single .a file +++++++++++++
+
+- remove the slibc copy of code under slk/old
 
 - get rid of `runld_slibc` since this should be in slibc repo.
 
