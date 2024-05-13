@@ -16,13 +16,14 @@ int main(int argc, char **argv) {
 		if (endswith(path, ".o")) {
 			lkctx_add_reader(&ctx, elfr_create(path));
 		} else if (endswith(path, ".a")) {
-			// TODO: add an API to lkctx to add an archive.
-			// Freeing the lkctx should free arctx's for all the added archives.
-			struct arctx _ctx = arctx_create(path); // TODO: the memory allocated in the arctx is leaked so far.	
+			struct arctx _ctx = arctx_create(path);
 
+			// add the individual elf readers for the archive
 			VEC_FOREACH(&_ctx.elf_mem_list, struct elf_member, mem) {
 				lkctx_add_reader(&ctx, elfr_create_from_buffer(_ctx.buf + mem->payload_off, mem->size, false));
 			}
+
+			vec_append(&ctx.arctx_list, &_ctx);
 		} else {
 			FAIL("Can not handle file %s\n", path);
 		}

@@ -4,6 +4,7 @@
 #include "scom/dict.h"
 #include "scom/elf_reader.h"
 #include "scom/elf_writer.h"
+#include "sar/arctx.h"
 
 #ifdef dprintf
 #undef dprintf
@@ -18,6 +19,8 @@ struct lkctx {
   struct vec readers;
   struct elf_writer writer;
 	struct dict sym_name_to_abs_va;  // only record global symbols for relocation
+
+	struct vec arctx_list;  // track the list of arctx to free in the end
 };
 
 static struct lkctx lkctx_create() {
@@ -25,6 +28,7 @@ static struct lkctx lkctx_create() {
   ctx.readers = vec_create(sizeof(struct elf_reader));
   ctx.writer = elfw_create();
 	ctx.sym_name_to_abs_va = dict_create_str_int();
+	ctx.arctx_list = vec_create(sizeof(struct arctx));
   return ctx;
 }
 
@@ -35,6 +39,12 @@ static void lkctx_free(struct lkctx* ctx) {
   vec_free(&ctx->readers);
   elfw_free(&ctx->writer);
 	dict_free(&ctx->sym_name_to_abs_va);
+
+	VEC_FOREACH(&ctx->arctx_list, struct arctx, _ctx) {
+		arctx_free(_ctx);
+	}
+
+	vec_free(&ctx->arctx_list);
 }
 
 static void lkctx_add_reader(struct lkctx* ctx, struct elf_reader reader) {

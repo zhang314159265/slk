@@ -30,12 +30,10 @@ A linker implemented in C.
 # Scratch
 
 - TODO: let `runslk_slibc` in slk/Makefile work with both standalone .o files and a single .a file +++++++++++++
+  - slk works with an .a file !!
+  - cleanup the hack regarding .a file in slk.c ++++++++
 
 - remove the slibc copy of code under slk/old
-
-- get rid of `runld_slibc` since this should be in slibc repo.
-
-- TODO: test slk with an archive file rather than all .o file
 
 - NEXT: cleanup slk.c and move some part of Makefile from old to top level directory ++++++++++
   - add some unit test for sum.

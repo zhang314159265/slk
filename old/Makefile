@@ -66,34 +66,6 @@ MIN_LIBGCC_O := $(patsubst %, artifact/libgcc.o/%, $(MIN_LIBGCC_O))
 MIN_LIBGCC_EH_O := $(shell cat artifact/libgcc_eh_min_obj_list)
 MIN_LIBGCC_EH_O := $(patsubst %, artifact/libgcc_eh.o/%, $(MIN_LIBGCC_EH_O))
 
-all: runslk_slibc
-
-# TODO: apply '-R .text.__x86.*' cause failure in objcopy. This is only relevant
-# if the library is compiled as PIC code.
-REMOVE_SECTION := -R .comment -R .note.GNU-stack -R .rel.eh_frame -R .eh_frame -R .group
-
-runslk_slibc:
-	make -C slibc
-	make -C .. slk
-	@rm -f ./a.out
-	objcopy $(REMOVE_SECTION) artifact/sum.gas.o out/sum.gas.o
-	objcopy $(REMOVE_SECTION) artifact/slibc/lib.o out/lib.o
-	objcopy $(REMOVE_SECTION) artifact/slibc/printf.o out/printf.o
-	@../out/slk out/lib.o out/printf.o out/sum.gas.o
-	@chmod a+x ./a.out
-	@./a.out
-
-runld_slibc:
-	make -C slibc
-	@rm -f ./a.out
-	objcopy $(REMOVE_SECTION) artifact/sum.gas.o out/sum.gas.o
-	objcopy $(REMOVE_SECTION) artifact/slibc/lib.o out/lib.o
-	objcopy $(REMOVE_SECTION) artifact/slibc/printf.o out/printf.o
-	# --allow-multiple-definition is needed if we strip the .group sections.
-	# Don't know why yet!
-	ld --allow-multiple-definition -melf_i386 -static out/sum.gas.o out/lib.o out/printf.o
-	@./a.out
-
 runld_min_obj_list:
 	@rm -f ./a.out
 	@ld -melf_i386 -static $(CRT1) $(CRTi) artifact/sum.gas.o $(MIN_LIBC_O) $(MIN_LIBGCC_O) $(MIN_LIBGCC_EH_O) $(CRTn)
