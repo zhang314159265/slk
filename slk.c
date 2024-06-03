@@ -16,6 +16,7 @@ int main(int argc, char **argv) {
 		if (endswith(path, ".o")) {
 			lkctx_add_reader(&ctx, elfr_create(path));
 		} else if (endswith(path, ".a")) {
+			// TODO: create a lkctx_add_archive function for this
 			struct arctx _ctx = arctx_create(path);
 
 			// add the individual elf readers for the archive

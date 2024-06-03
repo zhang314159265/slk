@@ -29,29 +29,14 @@ A linker implemented in C.
 
 # Scratch
 
-- remove the slibc copy of code under slk/old
-
-- NEXT: cleanup slk.c and move some part of Makefile from old to top level directory ++++++++++
-  - add some unit test for sum.
-
-- TODO: move all stuff in slk to old/. And increnemtnally cleanup stuff in old/ to refactor the project.
-
-- NOTE: critical to clean up `elf_file, elf_reader, elf_writer` under old/
+- cleanup everything else in old/
+  - `old/tests/test_elf_writer.c` is very interesting, clean up.
+	   - finish `test_hand_crafted_file` in scom/ repo! <+++++++++HERE
+       - make the manual flow share as much code as possible with the linker flow.
+       - TODO: cleanup `lkctx_write_elf`, make it call a new function `elfw_write` #### TODO <+++++++++ and let elfw_manual_text call `elfw_write`
 
 - REFACTORING.......
 	- `elf_writer` <= replaced by slk but some test still use the old version. Fully drop the old code for `elf_writer` after cleaning up the tests.
-  - clean up the dependencies on sar....
-  - `elf_file` <=== not used by slk
-	```
-	  comment in elf_writer.h that's relevant to elf_file
-/*
- * TODO consolidate with elf_file.h. The following things need to be resolved
- * 1. elf_file.h rely on arctx
- * 2. elf_file.h only handles relocable file.
- *    while this file only handles executable file
- */
- ```
-
 
 - check dynamic linking
 

@@ -195,10 +195,6 @@ static void lkctx_relocate(struct lkctx* ctx) {
 
 // Create the header and buffer for an ELF segment.
 void lkctx_create_elf_segment(struct lkctx* ctx, struct elf_writer* writer, const char* secname) {
-  // !!!This alignment is the key to make the generated ELF file work!
-  writer->next_file_off = make_align(writer->next_file_off, 4096);
-  writer->next_va = make_align(writer->next_va, 4096);
-
   // segbuf.len may be smaller than seglen for .bss section.
   struct str segbuf = str_create(8);
   int seglen = 0;
@@ -229,15 +225,7 @@ void lkctx_create_elf_segment(struct lkctx* ctx, struct elf_writer* writer, cons
     }
   }
 
-  // XXX don't support a combined .text + .bss segment yet.
-  assert(segbuf.len == 0 || segbuf.len == seglen);
-
-	Elf32_Phdr phdr = _elfw_create_phdr(writer->next_file_off, writer->next_va, seglen, secname);
-	vec_append(&writer->phdrtab, &phdr);
-	vec_append(&writer->pbuftab, &segbuf);
-
-  writer->next_file_off = make_align(writer->next_file_off + phdr.p_filesz, ALIGN_BYTES);
-  writer->next_va = make_align(writer->next_va + phdr.p_memsz, ALIGN_BYTES);
+	elfw_create_segment(writer, secname, &segbuf, seglen);
 }
 
 static void lkctx_write_elf(struct lkctx* ctx, struct elf_writer* writer, const char* path) {
@@ -253,56 +241,7 @@ static void lkctx_write_elf(struct lkctx* ctx, struct elf_writer* writer, const 
   assert(writer->phdrtab.len == 4);
   assert(writer->pbuftab.len == 4);
 
-  // place the .shstrtab
-  Elf32_Shdr* sh_shstrtab = vec_get_item(&writer->shdrtab, writer->ehdr.e_shstrndx);
-  sh_shstrtab->sh_size = writer->shstrtab.len;
-  elfw_place_section_to_layout(writer, sh_shstrtab); // will move writer->next_file_off
-
-  // decide the file offset for the program headers and section headers
-  writer->next_file_off = make_align(writer->next_file_off, ALIGN_BYTES);
-  Elf32_Ehdr* ehdr = &writer->ehdr;
-  ehdr->e_phoff = writer->next_file_off;
-  ehdr->e_phnum = writer->phdrtab.len;
-
-  writer->next_file_off = make_align(writer->next_file_off + sizeof(Elf32_Phdr) * ehdr->e_phnum, ALIGN_BYTES);
-  ehdr->e_shoff = writer->next_file_off;
-  ehdr->e_shnum = writer->shdrtab.len;
-
-  // next_file_off could be incremented for the section header table size.
-  // But it's fine to skip since nobody read it afterwards
-
-  // The layout of the output ELF file is completely decided. Start writing
-  // the content of the file.
-  FILE* fp = fopen(path, "wb");
-  assert(fp);
-  fwrite(ehdr, sizeof(Elf32_Ehdr), 1, fp);
-
-  // write segment content
-	for (int i = 0; i < writer->phdrtab.len; ++i) {
-		Elf32_Phdr* phdr = vec_get_item(&writer->phdrtab, i);
-		struct str* pbuf = vec_get_item(&writer->pbuftab, i);
-    fseek(fp, phdr->p_offset, SEEK_SET);
-    assert(pbuf->len == phdr->p_filesz);
-    fwrite(pbuf->buf, 1, phdr->p_filesz, fp);
-	}
-
-  // write .shstrtab
-  _elfw_write_section(fp, sh_shstrtab, writer->shstrtab.buf);
-
-  // write segment table
-  fseek(fp, ehdr->e_phoff, SEEK_SET);
-  VEC_FOREACH(&writer->phdrtab, Elf32_Phdr, phdr) {
-    fwrite(phdr, 1, sizeof(Elf32_Phdr), fp);
-  }
-
-  // write section table. An ELF without a NULL section will trigger warning
-  // by running 'readelf -h'
-  VEC_FOREACH(&writer->shdrtab, Elf32_Shdr, shdr) {
-    fwrite(shdr, 1, sizeof(Elf32_Shdr), fp);
-  }
-
-  fclose(fp);
-  printf("Done writing elf file to %s\n", path);
+	elfw_write(writer, path);
 }
 
 static void lkctx_link(struct lkctx* ctx) {
