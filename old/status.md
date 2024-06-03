@@ -19,9 +19,6 @@ A linker implemented in C.
 - [Working with submodules](https://github.blog/2016-02-01-working-with-submodules/)
   - need call 'git submodule update --remote' to fetch new commits for submodule from server.
 
-# Low Prio
-- why nm shows no symbols for libc.so but `readelf -s` works
-
 # Plan
 - make slk work for sum.o and slibc
 - refactor sas and slk to avoid duplicate code
@@ -30,15 +27,17 @@ A linker implemented in C.
 # Scratch
 
 - cleanup everything else in old/
-  - `old/tests/test_elf_writer.c` is very interesting, clean up.
-	   - finish `test_hand_crafted_file` in scom/ repo! <+++++++++HERE
-       - make the manual flow share as much code as possible with the linker flow.
-       - TODO: cleanup `lkctx_write_elf`, make it call a new function `elfw_write` #### TODO <+++++++++ and let elfw_manual_text call `elfw_write`
+  - Makefile
+    - `runld_min_obj_list` <++++++++++
 
-- REFACTORING.......
-	- `elf_writer` <= replaced by slk but some test still use the old version. Fully drop the old code for `elf_writer` after cleaning up the tests.
+- check branch WIP-manually-flatten-static-lib under slk
 
-- check dynamic linking
+- TODO: do 3 ways of flatten static lib in linking
+  - fully flatten [DONE]
+  - automatic flatten. find what's the min list of .o files. [DONE]
+  - manual flatten (may skip if automatic flatten shows there are too many items after flattening)
+
+- make slk work with glibc for sum after cleaning up 
 
 - DONE: printf.o
   - note that the switch is implemented with a jump table in .rodata section.
@@ -46,15 +45,11 @@ A linker implemented in C.
     The number of entries of the jump table is calculated by the literal values
     of all the cases in the switch statement.
 
+- check dynamic linking
 - TODO: handle dynamic libraries and pic code (got/plt)
 
 - TODO: should I remove the code that manually figure out the min set of .o? <++ LOW-PRIO
 - TODO: ld + min .o set result in a 755K a.out. Is this a general problem? We can improve linker to let the out a.out file much smaller.
-
-- TODO: do 3 ways of flatten static lib in linking
-  - fully flatten [DONE]
-  - automatic flatten. find what's the min list of .o files. [DONE]
-  - manual flatten (may skip if automatic flatten shows there are too many items after flattening)
 
 - TODO: fully understand `make runld` with `USE_STATIC=1`
 
@@ -68,4 +63,3 @@ A linker implemented in C.
 
 ` [https://blogs.oracle.com/linux/post/hello-from-a-libc-free-world-part-1] `, referred from crt0 wikipedia page. Looks reasonable.
 
-- check branch WIP-manually-flatten-static-lib under slk
