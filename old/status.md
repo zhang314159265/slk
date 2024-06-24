@@ -28,7 +28,8 @@ A linker implemented in C.
 
 - cleanup everything else in old/
   - Makefile
-    - `runld_min_obj_list` <++++++++++
+    - `runld_min_obj_list` <++++++++++  
+      - rename to `runld_glibc_auto_min_obj_list`
 
 - check branch WIP-manually-flatten-static-lib under slk
 

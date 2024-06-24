@@ -25,6 +25,15 @@ FULL_LIBC_O := $(filter-out out/libc_extract/mempcpy_chk-nonshared.o,$(FULL_LIBC
 FULL_LIBGCC_O = $(wildcard out/libgcc_extract/*)
 FULL_LIBGCC_EH_O = $(wildcard out/libgcc_eh_extract/*)
 
+AUTO_MIN_LIBC_O = $(shell cat out/libc_auto_min_obj_list)
+AUTO_MIN_LIBC_O := $(patsubst %, out/libc_extract/%, $(AUTO_MIN_LIBC_O))
+
+AUTO_MIN_LIBGCC_O = $(shell cat out/libgcc_auto_min_obj_list)
+AUTO_MIN_LIBGCC_O := $(patsubst %, out/libgcc_extract/%, $(AUTO_MIN_LIBGCC_O))
+
+AUTO_MIN_LIBGCC_EH_O = $(shell cat out/libgcc_eh_auto_min_obj_list)
+AUTO_MIN_LIBGCC_EH_O := $(patsubst %, out/libgcc_eh_extract/%, $(AUTO_MIN_LIBGCC_EH_O))
+
 extract_libs:
 	mkdir -p out/libc_extract
 	ar x $(LIBC) --output out/libc_extract
@@ -32,6 +41,19 @@ extract_libs:
 	ar x $(LIBGCC) --output out/libgcc_extract
 	mkdir -p out/libgcc_eh_extract
 	ar x $(LIBGCC_EH) --output out/libgcc_eh_extract
+
+setup_auto_min_obj_list:
+	DUMP_NEEDED_OBJ=1 out/sar $(LIBC) -s printf,dl_iterate_phdr -d _Unwind_Resume,__gcc_personality_v0,_init,_fini,__udivdi3,__ctzdi2,__letf2,__unordtf2,_dl_relocate_static_pie
+	mv /tmp/needed_obj out/libc_auto_min_obj_list
+	DUMP_NEEDED_OBJ=1 out/sar $(LIBGCC) -s __udivdi3,__unordtf2,__letf2,__ctzdi2
+	mv /tmp/needed_obj out/libgcc_auto_min_obj_list
+	DUMP_NEEDED_OBJ=1 out/sar $(LIBGCC_EH) -s _Unwind_Resume,__gcc_personality_v0 -d strlen,dl_iterate_phdr,free,malloc,abort
+	mv /tmp/needed_obj out/libgcc_eh_auto_min_obj_list
+
+runld_glibc_auto_min_obj_list: setup_sum setup_auto_min_obj_list
+	@rm -f ./a.out
+	ld -melf_i386 -static $(CRT1) $(CRTi) out/sum.gas.o $(AUTO_MIN_LIBC_O) $(AUTO_MIN_LIBGCC_O) $(AUTO_MIN_LIBGCC_EH_O) $(CRTn)
+	@./a.out
 
 runld_glibc_full_flatten: setup_sum extract_libs
 	@rm -f ./a.out

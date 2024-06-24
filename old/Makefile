@@ -23,6 +23,13 @@ MIN_LIBGCC_O := $(patsubst %, artifact/libgcc.o/%, $(MIN_LIBGCC_O))
 MIN_LIBGCC_EH_O := $(shell cat artifact/libgcc_eh_min_obj_list)
 MIN_LIBGCC_EH_O := $(patsubst %, artifact/libgcc_eh.o/%, $(MIN_LIBGCC_EH_O))
 
+# TODO remove
+CRT1 := /usr/lib/i386-linux-gnu/crt1.o
+CRTi := /usr/lib/i386-linux-gnu/crti.o
+CRTbegin := /usr/lib/gcc/x86_64-linux-gnu/11/32/crtbeginT.o
+CRTend := /usr/lib/gcc/x86_64-linux-gnu/11/32/crtend.o
+CRTn := /usr/lib/i386-linux-gnu/crtn.o
+
 runld_min_obj_list:
 	@rm -f ./a.out
 	@ld -melf_i386 -static $(CRT1) $(CRTi) artifact/sum.gas.o $(MIN_LIBC_O) $(MIN_LIBGCC_O) $(MIN_LIBGCC_EH_O) $(CRTn)
