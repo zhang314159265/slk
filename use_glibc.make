@@ -5,8 +5,15 @@ CRTend := /usr/lib/gcc/x86_64-linux-gnu/11/32/crtend.o
 CRTn := /usr/lib/i386-linux-gnu/crtn.o
 
 LIBGCC := /usr/lib/gcc/x86_64-linux-gnu/11/32/libgcc.a
-LIBC := /usr/lib/i386-linux-gnu/libc.a
 LIBGCC_EH := /usr/lib/gcc/x86_64-linux-gnu/11/32/libgcc_eh.a
+
+ifneq ($(USE_DYNAMIC), 1)
+LIBC := /usr/lib/i386-linux-gnu/libc.a
+else
+# this is a linker script. We can expand the content of the linker script to the command line explicitly
+# LIBC := /usr/lib/i386-linux-gnu/libc.so
+LIBC := /lib/i386-linux-gnu/libc.so.6
+endif
 
 LDFLAGS_GLIBC_PATHS := $(patsubst %, -L%, $(LIB_SEARCH_PATHS))
 
@@ -67,7 +74,8 @@ runld_glibc_uselib: setup_sum
 	rm -f ./a.out
 ifeq ($(USE_DYNAMIC), 1)
 	echo "dynamic linking"
-	ld -melf_i386 -I /lib/ld-linux.so.2 $(CRT1) $(CRTi) $(CRTbegin) out/sum.gas.o $(LDFLAGS_GLIBC_PATHS) -lgcc -lgcc_s -lc $(CRTend) $(CRTn)
+	# XXX -lc is an easier way to add libc
+	ld -melf_i386 -I /lib/ld-linux.so.2 $(CRT1) $(CRTi) $(CRTbegin) out/sum.gas.o $(LDFLAGS_GLIBC_PATHS) -lgcc -lgcc_s $(LIBC) $(CRTend) $(CRTn)
 else
 	echo "static linking"
 	ld -melf_i386 -static $(CRT1) $(CRTi) $(CRTbegin) out/sum.gas.o $(LDFLAGS_GLIBC_PATHS) --start-group -lgcc -lgcc_eh -lc --end-group $(CRTend) $(CRTn)
