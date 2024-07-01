@@ -27,11 +27,8 @@ A linker implemented in C.
 # Scratch
 
 - cleanup everything else in old/
-  - Makefile
-    - `runld_min_obj_list` <++++++++++  
-      - rename to `runld_glibc_auto_min_obj_list`
-
 - check branch WIP-manually-flatten-static-lib under slk
+
 
 - TODO: do 3 ways of flatten static lib in linking
   - fully flatten [DONE]
