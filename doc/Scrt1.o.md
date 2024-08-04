@@ -19,7 +19,7 @@ Command to disassemble Scrt1.o with relocation info: `objdump -dr Scrt1.o`
    # make %esp 16 bytes align
    9:   83 e4 f0                and    $0xfffffff0,%esp
 
-   # push a garbage so we push 8 works in total and maintain 16 bytes alignment
+   # push a garbage so we push 8 words in total and maintain 16 bytes alignment
    c:   50                      push   %eax
 
    # stack end
